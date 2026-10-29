@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    name: typecheck + test (node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [18, 20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
+      - name: shebang survives compile
+        run: |
+          first="$(head -n 1 dist/cli.js)"
+          test "$first" = "#!/usr/bin/env node"
+      - name: packed bin still has shebang
+        run: |
+          tgz="$(npm pack --ignore-scripts --pack-destination /tmp | tail -n 1)"
+          tar -xOf "/tmp/${tgz}" package/dist/cli.js | head -n 1 | grep -qx '#!/usr/bin/env node'
+      - name: CLI smoke
+        run: |
+          node dist/cli.js --help
+          node dist/cli.js --version
+          node dist/cli.js --offline --no-color examples/answer.md
+          node dist/cli.js --json --offline --prompt examples/prompt.txt --answer examples/answer.md
+          printf 'Use Node 20 test runner with node:assert/strict.\n' | node dist/cli.js --offline --no-color --json
