@@ -69,7 +69,7 @@ llm-roast --prompt examples/prompt.txt --answer examples/answer.md
 ```
 
 ```
-🔥 llm-roast  v0.1.0
+🔥 llm-roast  v0.1.1
 ────────────────────────────────────────────────────────────
 Roast Score  [100/100]  ██████████████████████  burnt offering
 
@@ -150,7 +150,7 @@ llm-roast --json --prompt p.txt --answer a.txt
 
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "score": 100,
   "label": "burnt offering",
   "spicy": false,

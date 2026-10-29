@@ -1,6 +1,6 @@
 {
   "name": "@webywz/llm-roast",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Roast your LLM prompts and answers — fluff, hedges, hallucination vibes, scored 0–100",
   "type": "module",
   "main": "./dist/index.js",
@@ -12,7 +12,7 @@
     }
   },
   "bin": {
-    "llm-roast": "./dist/cli.js"
+    "llm-roast": "dist/cli.js"
   },
   "files": [
     "dist",
