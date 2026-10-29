@@ -1,0 +1,59 @@
+{
+  "name": "@webywz/llm-roast",
+  "version": "0.1.0",
+  "description": "Roast your LLM prompts and answers — fluff, hedges, hallucination vibes, scored 0–100",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "llm-roast": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "prepack": "npm run build"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "license": "MIT",
+  "author": "webywz",
+  "keywords": [
+    "llm",
+    "prompt",
+    "roast",
+    "cli",
+    "eval",
+    "hallucination",
+    "prompt-engineering"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/webywz/llm-roast.git"
+  },
+  "bugs": {
+    "url": "https://github.com/webywz/llm-roast/issues"
+  },
+  "homepage": "https://github.com/webywz/llm-roast#readme",
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
