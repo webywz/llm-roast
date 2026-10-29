@@ -2,12 +2,14 @@
 
 Dunk on LLM prompts and answers. A tiny offline CLI that scores fluff, hedges, unearned confidence, hallucination vibes, and prompt smells — then writes a roast you can paste into a README or a tweet.
 
+[![CI](https://github.com/webywz/llm-roast/actions/workflows/ci.yml/badge.svg)](https://github.com/webywz/llm-roast/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@webywz/llm-roast.svg)](https://www.npmjs.com/package/@webywz/llm-roast)
+[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
 ```bash
 npm i -g @webywz/llm-roast
 llm-roast my-prompt.txt
 ```
-
-[![CI](https://github.com/webywz/llm-roast/actions/workflows/ci.yml/badge.svg)](https://github.com/webywz/llm-roast/actions/workflows/ci.yml)
 
 No API key required. If `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` is set, you get one extra paragraph. That's the whole cloud dependency.
 
