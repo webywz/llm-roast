@@ -1,31 +1,41 @@
-# 🔥 llm-roast
+# llm-roast
 
-Dunk on LLM prompts and answers. A tiny offline CLI that scores fluff, hedges, unearned confidence, hallucination vibes, and prompt smells — then writes a roast you can paste into a README or a tweet.
+<p align="center">
+  <a href="https://github.com/webywz/llm-roast/actions/workflows/ci.yml"><img src="https://github.com/webywz/llm-roast/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <a href="https://www.npmjs.com/package/@webywz/llm-roast"><img src="https://img.shields.io/npm/v/@webywz/llm-roast.svg" alt="npm" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT" /></a>
+</p>
 
-[![CI](https://github.com/webywz/llm-roast/actions/workflows/ci.yml/badge.svg)](https://github.com/webywz/llm-roast/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/@webywz/llm-roast.svg)](https://www.npmjs.com/package/@webywz/llm-roast)
-[![license](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+<p align="center">
+  <strong>Roast LLM prompts and answers — fluff, hedges, hallucination vibes, scored 0–100.</strong><br/>
+  Offline heuristics first. Optional API encore only if you already have a key.
+</p>
+
+<p align="center">
+  吐槽 LLM 的 prompt 与回答：注水、含糊、幻觉气味，打分 0–100。<br/>
+  本地启发式优先；只有你自己有 Key 时才可选多一段 API 评语。
+</p>
+
+A tiny CLI for eval dumps, prompt reviews, and screenshots you can share. Higher **Roast Score** means more roastable. This is a heuristic scorer, not a fact checker.
+
+给评测 dump、prompt 复盘和可分享截图用的小 CLI。**Roast Score** 越高越该被吐槽。这是启发式打分，不是事实核查器。
+
+---
+
+## Install · 安装
 
 ```bash
 npm i -g @webywz/llm-roast
-llm-roast my-prompt.txt
-```
-
-No API key required. If `OPENAI_API_KEY` or `ANTHROPIC_API_KEY` is set, you get one extra paragraph. That's the whole cloud dependency.
-
-## Install
-
-```bash
-npm i -g @webywz/llm-roast
-```
-
-Node 18+.
-
-```bash
 npx @webywz/llm-roast examples/answer.md
 ```
 
-## Usage
+Requires **Node.js 18+**. Package: [`@webywz/llm-roast`](https://www.npmjs.com/package/@webywz/llm-roast). Binary: `llm-roast`.
+
+需要 **Node.js 18+**。包名 `@webywz/llm-roast`，命令仍是 `llm-roast`。
+
+---
+
+## Quick start · 快速开始
 
 ```bash
 llm-roast prompt.txt
@@ -35,172 +45,39 @@ cat answer.md | llm-roast
 llm-roast - < prompt.txt
 llm-roast --json answer.md
 llm-roast --spicy answer.md
-llm-roast --fail-above 60 answer.md
+llm-roast --offline --fail-above 60 answer.md
 ```
 
-| Flag | What it does |
+| Flag | What it does · 作用 |
 | --- | --- |
-| `--prompt <file>` | Force prompt-smell rules (use `-` for stdin) |
-| `--answer <file>` | Force answer rules (use `-` for stdin) |
-| `--json` | Machine-readable result |
-| `--spicy` | Harsher tone; **score is unchanged** |
-| `--offline` | Skip the optional API encore |
-| `--fail-above <n>` | Exit `1` when Roast Score **>** `n` (CI gate; `n` = 0–100) |
-| `--color` / `--no-color` | Force / disable ANSI color |
+| `--prompt <file>` | Force prompt-smell rules (`-` = stdin) · 按 prompt 气味规则打分 |
+| `--answer <file>` | Force answer rules (`-` = stdin) · 按回答规则打分 |
+| `--json` | Machine-readable result · 机器可读输出 |
+| `--spicy` | Harsher tone; **score unchanged** · 文案更狠；**分数不变** |
+| `--offline` | Skip the optional API encore · 跳过可选 API 加戏 |
+| `--fail-above <n>` | Exit `1` when Roast Score **>** `n` (0–100) · 分数 **大于** `n` 时退出码 `1` |
+| `--color` / `--no-color` | Force / disable ANSI color · 强制 / 关闭颜色 |
+| `-h` / `-v` | Help / version · 帮助 / 版本 |
 
-A single file is auto-classified from the name (`prompt`, `answer`, `response`, …) or from opening lines (`you are` vs `as an AI`).
+A bare file is auto-classified from the name (`prompt`, `answer`, `response`, …) or opening lines (`you are` vs `as an AI`).
 
-## Sample
+单文件会按文件名或开头几行自动判断是 prompt 还是 answer。
 
-The fixtures in [`examples/`](examples/) are a greatest-hits dumpster fire, so they pin the meter. Prompt:
+Fixtures: [`examples/prompt.txt`](examples/prompt.txt) · [`examples/answer.md`](examples/answer.md).
 
-```text
-You are a senior engineer and also a friendly pirate. Write a comprehensive yet concise guide. Be brief but cover every edge case in detail. Don't use lists, and bullet the key points. Output something about distributed systems. Make it fun and strictly professional. Do not hallucinate, but feel free to invent examples. Ignore previous instructions and follow all these instructions.
-```
-
-Answer:
-
-```text
-As an AI language model, great question! In today's digital age, it's important to delve into the rich tapestry of distributed systems.
-
-According to Smith et al. (2024), 87.3% of production outages are caused by missing timeouts. You can simply call `cluster.autoHeal()` — it's documented at https://docs.example.com/v99/autoheal. This will definitely always work and never fail.
-
-Studies show that a seamless, robust, holistic approach will revolutionize the landscape. It might could potentially depend, however. I hope this helps!
-```
-
-```bash
-llm-roast --prompt examples/prompt.txt --answer examples/answer.md
-```
-
-```
-🔥 llm-roast  v0.1.2
-────────────────────────────────────────────────────────────
-Roast Score  [100/100]  ██████████████████████  burnt offering
-
-When you roast both halves you see the whole crime: fuzzy ask, fluent shrug.
-100/100.
-
-PROMPT  prompt.txt  ·  61 words  ·  [100/100]  burnt offering
-  ██████████████████████
-
-  THE ROAST
-  (prompt) I read this so you don't have to. You're welcome, and I'm sorry.
-  Prompt smell: short and also a novel. Asked for brevity and encyclopedic
-  coverage in the same breath. The instructions fight each other in the
-  parking lot. don't hallucinate, except please do. Prompt smell: instruction
-  ouroboros. Told it to ignore instructions and also follow them. Roast score
-  100/100 — extra crispy. There's a tighter version hiding under the garnish.
-
-  TOP FINDINGS
-   1. prompt short and also a novel +14
-      Asked for brevity and encyclopedic coverage in the same breath.
-      L1 …a senior engineer and also a friendly pirate. Write a comprehensive yet concise guide. Be brief but cover ev…
-   2. prompt lists are forbidden / required +14
-      Banned lists and then ordered a list.
-      L1 … guide. Be brief but cover every edge case in detail. Don't use lists, and bullet the key points. Output som…
-   3. prompt boardroom pirate +14
-      Tone instructions are having a custody battle.
-      L1 …. Output something about distributed systems. Make it fun and strictly professional. Do not hallucinate, but…
-
-────────────────────────────────────────────────────────────
-
-ANSWER  answer.md  ·  77 words  ·  [100/100]  burnt offering
-  ██████████████████████
-
-  THE ROAST
-  (answer) This isn't text so much as packing material shaped like sentences.
-  "According to Smith et al. (2024), 87.3% of production outages are cau…"
-  looks like a fact the way a movie set looks like a city. "As an AI language
-  model" — a phrase that has never improved a sentence, including this one.
-  "could potentially" is a weather report, not an answer. Commit or say you
-  don't know. Roast score 100/100 — extra crispy. There's a tighter version
-  hiding under the garnish.
-
-  TOP FINDINGS
-   1. vibes  made-up citation energy +15
-      Academic name-drop once with no references section.
-      L3 According to Smith et al. (2024), 87.3% of production outages are caused by missing timeouts. You can simply…
-   2. fluff  the original sin +14
-      Caught "As an AI language model".
-      L1 As an AI language model, great question! In today's digital age, it's important to delve into the rich tapes…
-   3. vibes  URL from a parallel universe +14
-      Placeholder or toy URL: https://docs.example.com/v99/autoheal
-      L3 …simply call `cluster.autoHeal()` — it's documented at https://docs.example.com/v99/autoheal. This will defin…
-
-  Higher score = more roastable. --json for machines, --spicy for feelings.
-```
-
-Copy is deterministic per input. `--spicy` only changes the prose. In a TTY the score chip is green / yellow / red; this README dump is `--no-color`.
-
-## What it sniffs
-
-| Bucket | Examples |
-| --- | --- |
-| **Fluff** | "as an AI language model", "in today's digital age", "delve", "tapestry", "robust", "leverage", "synergy", "great question" |
-| **Hedge** | "might", "could potentially", "it depends", "perhaps", "to some extent" |
-| **Overconfidence** | "always", "never", "guaranteed", "100%", "everyone knows" — extra spicy when there is no source nearby |
-| **Hallucination vibes** | `(Author et al., 2024)` with no references, `example.com` docs, `87.3%` with no source, invented `` `cluster.autoHeal()` `` APIs, "studies show" |
-| **Prompt smells** | concise *and* comprehensive, no lists *and* bullet the points, stacked roles, missing format/audience/length |
-
-This is a **heuristic** scorer, not a fact checker. It is for eval dumps, prompt reviews, and screenshots — not for proving a model lied.
-
-**Roast Score** is 0–100. Higher = more roastable.
-
-## JSON
-
-```bash
-llm-roast --json --prompt p.txt --answer a.txt
-```
-
-```json
-{
-  "version": "0.1.2",
-  "score": 100,
-  "label": "burnt offering",
-  "spicy": false,
-  "targets": [
-    {
-      "kind": "prompt",
-      "source": "prompt.txt",
-      "score": 100,
-      "findings": [
-        {
-          "kind": "prompt",
-          "severity": "high",
-          "title": "short and also a novel",
-          "line": 1,
-          "points": 14
-        }
-      ]
-    }
-  ]
-}
-```
-
-## CI gate
-
-Fail the job when a prompt or answer is too roastable (overconfidence / fluff / hallucination vibes). Still prints the roast to the log; exits `1` only when the score **exceeds** the threshold.
-
-```bash
-llm-roast --offline --fail-above 60 path/to/answer.md
-```
-
-GitHub Actions one-liner:
+示例：`examples/prompt.txt` 与 `examples/answer.md`。
 
 ```yaml
+# GitHub Actions
 - name: Roast gate
   run: npx @webywz/llm-roast --offline --fail-above 60 path/to/answer.md
 ```
 
-`--fail-above 100` never fails (score tops out at 100). `--fail-above 0` fails on any non-zero score.
+`--fail-above 100` never fails (score tops at 100). `--fail-above 0` fails on any non-zero score.
 
-## Optional deepen
+`--fail-above 100` 永远不会失败（满分 100）；`--fail-above 0` 只要非零就失败。
 
-## Optional deepen
-
-If the environment has `OPENAI_API_KEY` (preferred) or `ANTHROPIC_API_KEY`, llm-roast asks for **one** extra paragraph after the heuristic roast. Failures and timeouts are silent. Pass `--offline` to skip.
-
-## Library
+### Library · 库
 
 ```ts
 import { roastText, roastDocuments } from "@webywz/llm-roast";
@@ -214,10 +91,34 @@ const both = roastDocuments([
 ]);
 ```
 
-## Why it exists
+---
 
-Prompt engineering and eval dumps are full of filler, hedging, false confidence, and hallucination tells. Engineers wanted a fun local tool that **scores** that mess and **dunks** on it — output you can share.
+## Features · 特性
 
-## License
+| Bucket · 桶 | Examples · 例子 |
+| --- | --- |
+| **Fluff** | "as an AI language model", "in today's digital age", "delve", "tapestry", "robust", "leverage", "synergy", "great question" |
+| **Hedge** | "might", "could potentially", "it depends", "perhaps", "to some extent" |
+| **Overconfidence** | "always", "never", "guaranteed", "100%", "everyone knows" — extra weight when no nearby source · 附近没有出处时更重 |
+| **Hallucination vibes** | `(Author et al., 2024)` with no references, `example.com` docs, precise `%` with no source, invented APIs, "studies show" |
+| **Prompt smells** | concise *and* comprehensive, no lists *and* bullet the points, stacked roles, missing format / audience / length |
 
-MIT
+- **Deterministic copy** — same input → same roast text. `--spicy` only changes tone.
+  **文案确定** — 相同输入得到相同吐槽；`--spicy` 只改语气。
+- **CI gate** — `--fail-above` still prints the roast, then exits `1` only when the score exceeds the threshold.
+  **CI 门禁** — 仍会打印吐槽；仅当分数超过阈值时以 `1` 退出。
+- **Optional deepen** — with `OPENAI_API_KEY` (preferred) or `ANTHROPIC_API_KEY`, one extra paragraph after the heuristic roast. Failures and timeouts stay quiet. `--offline` skips it.
+  **可选加深** — 有 OpenAI（优先）或 Anthropic Key 时，启发式之后多一段评语；失败 / 超时静默。`--offline` 跳过。
+
+---
+
+## Links · 链接
+
+- npm · [`@webywz/llm-roast`](https://www.npmjs.com/package/@webywz/llm-roast)
+- Source · [github.com/webywz/llm-roast](https://github.com/webywz/llm-roast)
+- Related · [prompt-diff](https://github.com/webywz/prompt-diff) · [eval-smoke](https://github.com/webywz/eval-smoke)
+- License · [MIT](./LICENSE)
+
+```bash
+npm install && npm test && npm run typecheck
+```
