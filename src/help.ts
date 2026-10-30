@@ -18,6 +18,7 @@ Options:
   --json                    Machine-readable output
   --spicy                   Harsher tone (score unchanged)
   --offline                 Skip optional API deepen even if keys are set
+  --locale <en|zh>          Terminal output locale (default: en; JSON keys unchanged)
   --fail-above <n>          Exit 1 when Roast Score > n (suite: maxScore > n; n = 0–100)
   --github                  Emit GitHub Actions annotations (::notice/warning/error)
   --max-annotations <n>     Cap GitHub annotation lines (default: 20)

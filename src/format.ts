@@ -1,4 +1,5 @@
 import type { FormatOptions, Finding, RoastResult, TargetResult } from "./types.js";
+import { getStrings } from "./locale.js";
 
 const RESET = "\x1b[0m";
 const BOLD = "\x1b[1m";
@@ -93,9 +94,15 @@ function scoreChip(c: ReturnType<typeof paint>, score: number): string {
   return c.chipRed(label);
 }
 
-function findingsBlock(c: ReturnType<typeof paint>, findings: Finding[], limit = 6): string[] {
+function findingsBlock(
+  c: ReturnType<typeof paint>,
+  findings: Finding[],
+  noFindingsText: string,
+  moreFindingsText: (n: number) => string,
+  limit = 6,
+): string[] {
   if (!findings.length) {
-    return [c.dim("  (no findings — suspiciously clean)")];
+    return [c.dim(`  ${noFindingsText}`)];
   }
   const lines: string[] = [];
   for (const [i, f] of findings.slice(0, limit).entries()) {
@@ -111,32 +118,39 @@ function findingsBlock(c: ReturnType<typeof paint>, findings: Finding[], limit =
     }
   }
   if (findings.length > limit) {
-    lines.push(c.dim(`      … ${findings.length - limit} more finding(s)`));
+    lines.push(c.dim(`      ${moreFindingsText(findings.length - limit)}`));
   }
   return lines;
 }
 
-function targetBlock(c: ReturnType<typeof paint>, t: TargetResult): string {
+function targetBlock(
+  c: ReturnType<typeof paint>,
+  t: TargetResult,
+  strings: ReturnType<typeof getStrings>,
+): string {
   const head = [
-    `${c.bold(t.kind.toUpperCase())}  ${t.source}  ·  ${t.wordCount} words  ·  ${scoreChip(c, t.score)}  ${c.dim(t.label)}`,
+    `${c.bold(t.kind.toUpperCase())}  ${t.source}  ·  ${t.wordCount} ${strings.words}  ·  ${scoreChip(c, t.score)}  ${c.dim(t.label)}`,
     `  ${scoreColor(c, t.score, bar(t.score))}`,
     "",
-    c.bold("  THE ROAST"),
+    c.bold(`  ${strings.theRoast}`),
     wrap(t.roast, 78, 2),
     "",
-    c.bold("  TOP FINDINGS"),
-    ...findingsBlock(c, t.findings),
+    c.bold(`  ${strings.topFindings}`),
+    ...findingsBlock(c, t.findings, strings.noFindings, strings.moreFindings),
   ];
   return head.join("\n");
 }
 
 export function formatPretty(result: RoastResult, options: FormatOptions = {}): string {
+  const locale = options.locale || "en";
+  const strings = getStrings(locale);
   const c = paint(wantsColor(options.color));
   const line = c.dim("─".repeat(60));
+  const spicyText = result.spicy ? c.red(`  · ${strings.spicy}`) : "";
   const parts: string[] = [
-    `${c.bold("🔥 llm-roast")}  ${c.dim("v" + result.version)}${result.spicy ? c.red("  · spicy") : ""}`,
+    `${c.bold("🔥 llm-roast")}  ${c.dim(strings.version + result.version)}${spicyText}`,
     line,
-    `${c.bold("Roast Score")}  ${scoreChip(c, result.score)}  ${scoreColor(c, result.score, bar(result.score))}  ${c.dim(result.label)}`,
+    `${c.bold(strings.roastScore)}  ${scoreChip(c, result.score)}  ${scoreColor(c, result.score, bar(result.score))}  ${c.dim(result.label)}`,
   ];
   if (result.summary) {
     parts.push("", wrap(result.summary, 78, 0));
@@ -145,14 +159,14 @@ export function formatPretty(result: RoastResult, options: FormatOptions = {}): 
 
   for (const [i, t] of result.targets.entries()) {
     if (i > 0) parts.push("", line, "");
-    parts.push(targetBlock(c, t));
+    parts.push(targetBlock(c, t, strings));
   }
 
   if (result.deepen) {
-    parts.push("", line, "", c.bold("  DEEPEN"), wrap(result.deepen, 78, 2));
+    parts.push("", line, "", c.bold(`  ${strings.deepen}`), wrap(result.deepen, 78, 2));
   }
 
-  parts.push("", c.dim("  Higher score = more roastable. --json for machines, --spicy for feelings."));
+  parts.push("", c.dim(`  ${strings.footer}`));
   return parts.join("\n") + "\n";
 }
 

@@ -51,4 +51,5 @@ export interface RoastResult {
 export interface FormatOptions {
   color?: boolean;
   spicy?: boolean;
+  locale?: "en" | "zh";
 }

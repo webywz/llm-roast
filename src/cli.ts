@@ -140,6 +140,7 @@ async function main(argv: string[]): Promise<number> {
       formatPretty(result, {
         color: parsed.github ? false : parsed.color,
         spicy: parsed.spicy,
+        locale: parsed.locale,
       }),
     );
     if (parsed.github) {
