@@ -1,31 +1,11 @@
-import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const cli = join(root, "dist/cli.js");
-const answer = join(root, "examples/answer.md");
-const prompt = join(root, "examples/prompt.txt");
-
-function build(): void {
-  const tsc = join(root, "node_modules/typescript/bin/tsc");
-  execFileSync(process.execPath, [tsc, "-p", "tsconfig.json"], { cwd: root });
-}
-
-function run(args: string[], env: Record<string, string | undefined> = {}) {
-  return spawnSync(process.execPath, [cli, ...args], {
-    cwd: root,
-    encoding: "utf8",
-    env: { ...process.env, NO_COLOR: "1", ...env },
-  });
-}
+import { answer, prompt, runCli as run } from "./helpers.js";
 
 describe("--out flag", () => {
   it("lists --out in help", () => {
-    build();
     const help = run(["--help"]);
     expect(help.status).toBe(0);
     expect(help.stdout).toMatch(/--out <file>/);
@@ -33,7 +13,6 @@ describe("--out flag", () => {
   });
 
   it("writes pretty text report to file with --out", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-out-"));
     const outFile = join(dir, "report.txt");
     try {
@@ -54,7 +33,6 @@ describe("--out flag", () => {
   });
 
   it("writes JSON report to file with --out --json", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-out-json-"));
     const outFile = join(dir, "report.json");
     try {
@@ -79,7 +57,6 @@ describe("--out flag", () => {
   });
 
   it("suppresses stderr note with --out --quiet", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-out-quiet-"));
     const outFile = join(dir, "report.txt");
     try {
@@ -96,7 +73,6 @@ describe("--out flag", () => {
   });
 
   it("keeps default stdout behavior when --out is absent", () => {
-    build();
     const result = run(["--offline", answer]);
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/Roast Score/);
@@ -104,14 +80,12 @@ describe("--out flag", () => {
   });
 
   it("exits 2 when --out file write fails", () => {
-    build();
     const result = run(["--offline", "--out", "/invalid/path/report.txt", answer]);
     expect(result.status).toBe(2);
     expect(result.stderr).toMatch(/failed to write/);
   });
 
   it("writes pretty report to --out with --prompt and --answer", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-out-both-"));
     const outFile = join(dir, "report.txt");
     try {
@@ -135,7 +109,6 @@ describe("--out flag", () => {
   });
 
   it("combines --out with --locale zh", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-out-zh-"));
     const outFile = join(dir, "report.txt");
     try {
@@ -150,7 +123,6 @@ describe("--out flag", () => {
   });
 
   it("combines --out with --spicy", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-out-spicy-"));
     const outFile = join(dir, "report.txt");
     try {
@@ -166,7 +138,6 @@ describe("--out flag", () => {
   });
 
   it("--out writes to file without colors", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-out-color-"));
     const outFile = join(dir, "report.txt");
     try {

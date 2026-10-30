@@ -1,30 +1,11 @@
-import { execFileSync, spawnSync } from "node:child_process";
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const cli = join(root, "dist/cli.js");
-const answer = join(root, "examples/answer.md");
-
-function build(): void {
-  const tsc = join(root, "node_modules/typescript/bin/tsc");
-  execFileSync(process.execPath, [tsc, "-p", "tsconfig.json"], { cwd: root });
-}
-
-function run(args: string[], env: Record<string, string | undefined> = {}) {
-  return spawnSync(process.execPath, [cli, ...args], {
-    cwd: root,
-    encoding: "utf8",
-    env: { ...process.env, NO_COLOR: "1", ...env },
-  });
-}
+import { answer, root, runCli as run } from "./helpers.js";
 
 describe("--github CLI", () => {
   it("lists --github in help", () => {
-    build();
     const help = run(["--help"]);
     expect(help.status).toBe(0);
     expect(help.stdout).toMatch(/--github/);
@@ -35,7 +16,6 @@ describe("--github CLI", () => {
   });
 
   it("emits Actions annotations with --github", () => {
-    build();
     const result = run(["--offline", "--github", answer]);
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/::(error|warning|notice) /);
@@ -44,7 +24,6 @@ describe("--github CLI", () => {
   });
 
   it("keeps --json stdout clean when combined with --github", () => {
-    build();
     const result = run(["--offline", "--github", "--json", answer]);
     expect(result.status).toBe(0);
     const parsed = JSON.parse(result.stdout);
@@ -54,7 +33,6 @@ describe("--github CLI", () => {
   });
 
   it("combines --github with --fail-above (annotations + exit 1)", () => {
-    build();
     const result = run(["--offline", "--github", "--fail-above", "50", answer]);
     expect(result.status).toBe(1);
     expect(result.stdout).toMatch(/::(error|warning|notice) /);
@@ -62,7 +40,6 @@ describe("--github CLI", () => {
   });
 
   it("writes GITHUB_OUTPUT fields with --github", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-gh-cli-"));
     const outFile = join(dir, "github_output");
     try {
@@ -80,14 +57,12 @@ describe("--github CLI", () => {
   });
 
   it("rejects non-positive --max-annotations", () => {
-    build();
     const result = run(["--offline", "--github", "--max-annotations", "0", answer]);
     expect(result.status).toBe(2);
     expect(result.stderr).toMatch(/max-annotations/);
   });
 
   it("honors --max-annotations with --github", () => {
-    build();
     const result = run([
       "--offline",
       "--github",
@@ -95,7 +70,7 @@ describe("--github CLI", () => {
       "1",
       answer,
     ]);
-    expect(result.status).toBe(0);
+    expect(result.status, result.stderr || result.stdout.slice(0, 200)).toBe(0);
     const annLines = result.stdout
       .split("\n")
       .filter((l) => /^::(error|warning|notice) /.test(l));
@@ -103,7 +78,6 @@ describe("--github CLI", () => {
   });
 
   it("writes GITHUB_STEP_SUMMARY with --github", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-gh-sum-cli-"));
     const sumFile = join(dir, "step_summary.md");
     try {
@@ -122,7 +96,6 @@ describe("--github CLI", () => {
 
 describe("--quiet CLI", () => {
   it("suppresses the pretty report with --quiet", () => {
-    build();
     const result = run(["--offline", "--quiet", answer]);
     expect(result.status).toBe(0);
     expect(result.stdout).toBe("");
@@ -130,7 +103,6 @@ describe("--quiet CLI", () => {
   });
 
   it("keeps --json stdout with --quiet", () => {
-    build();
     const result = run(["--offline", "--quiet", "--json", answer]);
     expect(result.status).toBe(0);
     const parsed = JSON.parse(result.stdout);
@@ -139,7 +111,6 @@ describe("--quiet CLI", () => {
   });
 
   it("keeps --github annotations with --quiet (no pretty group)", () => {
-    build();
     const result = run(["--offline", "--github", "--quiet", answer]);
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/::(error|warning|notice) /);
@@ -148,7 +119,6 @@ describe("--quiet CLI", () => {
   });
 
   it("writes GITHUB_OUTPUT with --github --quiet", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-quiet-out-"));
     const outFile = join(dir, "github_output");
     try {
@@ -167,7 +137,6 @@ describe("--quiet CLI", () => {
   });
 
   it("writes GITHUB_STEP_SUMMARY with --github --quiet", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-quiet-sum-"));
     const sumFile = join(dir, "step_summary.md");
     try {

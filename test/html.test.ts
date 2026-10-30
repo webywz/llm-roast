@@ -1,29 +1,10 @@
-import { execFileSync, spawnSync } from "node:child_process";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { escapeHtml, formatHtml } from "../src/html.js";
 import { roastDocuments } from "../src/roast.js";
-
-const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const cli = join(root, "dist/cli.js");
-const answer = join(root, "examples/answer.md");
-const prompt = join(root, "examples/prompt.txt");
-
-function build(): void {
-  const tsc = join(root, "node_modules/typescript/bin/tsc");
-  execFileSync(process.execPath, [tsc, "-p", "tsconfig.json"], { cwd: root });
-}
-
-function run(args: string[], env: Record<string, string | undefined> = {}) {
-  return spawnSync(process.execPath, [cli, ...args], {
-    cwd: root,
-    encoding: "utf8",
-    env: { ...process.env, NO_COLOR: "1", ...env },
-  });
-}
+import { answer, prompt, runCli as run } from "./helpers.js";
 
 const HOSTILE = `As an AI language model, <img src=x onerror="alert(1)"> & </script> studies show.`;
 
@@ -63,7 +44,6 @@ describe("escapeHtml / formatHtml", () => {
 
 describe("--html CLI", () => {
   it("lists --html in help", () => {
-    build();
     const help = run(["--help"]);
     expect(help.status).toBe(0);
     expect(help.stdout).toMatch(/--html \[path\]/);
@@ -72,7 +52,6 @@ describe("--html CLI", () => {
   });
 
   it("prints HTML to stdout when path is omitted", () => {
-    build();
     const result = run(["--html", "--offline", answer]);
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/<!DOCTYPE html>/i);
@@ -84,7 +63,6 @@ describe("--html CLI", () => {
   });
 
   it("writes HTML to path and does not dump it to stdout", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-html-"));
     const outFile = join(dir, "nested", "report.html");
     try {
@@ -104,7 +82,6 @@ describe("--html CLI", () => {
   });
 
   it("rejects --html together with --json", () => {
-    build();
     const result = run(["--offline", "--html", "--json", answer]);
     expect(result.status).toBe(2);
     expect(result.stderr).toMatch(/cannot be combined with --json/);
@@ -112,7 +89,6 @@ describe("--html CLI", () => {
   });
 
   it("keeps default pretty stdout when --html is absent", () => {
-    build();
     const result = run(["--offline", answer]);
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/Roast Score/);
@@ -121,7 +97,6 @@ describe("--html CLI", () => {
   });
 
   it("keeps --json stdout unchanged when --html is absent", () => {
-    build();
     const result = run(["--offline", "--json", answer]);
     expect(result.status).toBe(0);
     const parsed = JSON.parse(result.stdout);
@@ -131,7 +106,6 @@ describe("--html CLI", () => {
   });
 
   it("suppresses pretty report with --html --quiet (HTML still on stdout)", () => {
-    build();
     const result = run(["--offline", "--quiet", "--html", "--no-color", answer]);
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/<!DOCTYPE html>/i);
@@ -140,7 +114,6 @@ describe("--html CLI", () => {
   });
 
   it("keeps --github annotations with --html (annotations on stderr)", () => {
-    build();
     const result = run(["--offline", "--github", "--html", "--no-color", answer]);
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/<!DOCTYPE html>/i);
@@ -150,7 +123,6 @@ describe("--html CLI", () => {
   });
 
   it("keeps --github annotations + STEP_SUMMARY with --html path", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-html-gh-"));
     const htmlFile = join(dir, "roast.html");
     const sumFile = join(dir, "step_summary.md");
@@ -172,7 +144,6 @@ describe("--html CLI", () => {
   });
 
   it("suppresses pretty group with --html path --github --quiet", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-html-quiet-"));
     const htmlFile = join(dir, "roast.html");
     try {
@@ -189,7 +160,6 @@ describe("--html CLI", () => {
   });
 
   it("writes pretty to --out and HTML to stdout", () => {
-    build();
     const dir = mkdtempSync(join(tmpdir(), "llm-roast-html-out-"));
     const outFile = join(dir, "report.txt");
     try {
@@ -204,7 +174,6 @@ describe("--html CLI", () => {
   });
 
   it("writes HTML for --prompt + --answer", () => {
-    build();
     const result = run(["--offline", "--html", "--prompt", prompt, "--answer", answer]);
     expect(result.status).toBe(0);
     expect(result.stdout).toMatch(/<!DOCTYPE html>/i);

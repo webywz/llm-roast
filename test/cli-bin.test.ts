@@ -1,4 +1,3 @@
-import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -20,8 +19,6 @@ describe("bin entry", () => {
   });
 
   it("keeps a node shebang after tsc emit", () => {
-    const tsc = join(root, "node_modules/typescript/bin/tsc");
-    execFileSync(process.execPath, [tsc, "-p", "tsconfig.json"], { cwd: root });
     const dist = readFileSync(join(root, "dist/cli.js"), "utf8");
     expect(dist.startsWith("#!/usr/bin/env node\n")).toBe(true);
   });
