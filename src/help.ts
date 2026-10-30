@@ -13,7 +13,8 @@ Usage:
 Options:
   --prompt <file>           Roast a prompt (use - for stdin)
   --answer <file>           Roast a model answer (use - for stdin)
-  --suite <glob|dir>        Batch mode: glob pattern or directory (≥2 files, JSON out)
+  --suite <glob|dir>        Batch mode: glob/brace pattern or directory (≥2 files, JSON out)
+                            Supports brace expansion: {a,b}, e.g. "dir/{good,bad}/*.md"
   --json                    Machine-readable output
   --spicy                   Harsher tone (score unchanged)
   --offline                 Skip optional API deepen even if keys are set
@@ -37,6 +38,7 @@ Exit codes:
 Higher Roast Score = more roastable (0–100).
 Suite mode (--suite) roasts ≥2 files and emits JSON with per-file scores
 plus aggregated stats (count, maxScore, avgScore, failCount).
+Supports brace expansion: fixtures/{good,bad}/*.md or dir/{a,b}.md
 With --github, annotations go to stdout (or stderr when combined with --json).
 Job outputs score/label/findings are written when GITHUB_OUTPUT is set.
 A short Markdown job summary is appended when GITHUB_STEP_SUMMARY is set.

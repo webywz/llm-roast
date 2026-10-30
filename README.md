@@ -82,15 +82,17 @@ Roast multiple files in one run with `--suite <glob|dir>`:
 llm-roast --suite "examples/*.md" --json
 llm-roast --suite examples --json
 llm-roast --suite "examples/*.{txt,md}" --json --fail-above 60
+llm-roast --suite "examples/{answer,bad-answer}.md" --json
+llm-roast --suite "fixtures/{good,bad}/*.md" --json
 ```
 
-Suite mode requires **≥2** roastable files (`.txt`, `.md`, `.markdown`). Output is **always JSON** with per-file results and aggregated stats:
+Suite mode requires **≥2** roastable files (`.txt`, `.md`, `.markdown`). Supports **brace expansion** like `{a,b}` for flexible file matching. Output is **always JSON** with per-file results and aggregated stats:
 
-批处理模式需要 **≥2** 个可打分文件（`.txt`、`.md`、`.markdown`）。输出**始终为 JSON**，包含每个文件的结果与汇总统计：
+批处理模式需要 **≥2** 个可打分文件（`.txt`、`.md`、`.markdown`）。支持 **大括号扩展** 如 `{a,b}` 以灵活匹配文件。输出**始终为 JSON**，包含每个文件的结果与汇总统计：
 
 ```json
 {
-  "version": "0.1.12",
+  "version": "0.1.13",
   "files": [
     { "path": "examples/answer.md", "score": 73, "label": "yikes", "kind": "answer", "wordCount": 89 },
     { "path": "examples/prompt.txt", "score": 58, "label": "caution", "kind": "prompt", "wordCount": 42 }
