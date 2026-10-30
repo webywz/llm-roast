@@ -7,6 +7,7 @@ export type CliCommand =
       prompt?: string;
       answer?: string;
       suite?: string;
+      out?: string;
       json: boolean;
       spicy: boolean;
       color?: boolean;
@@ -78,6 +79,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let prompt: string | undefined;
   let answer: string | undefined;
   let suite: string | undefined;
+  let out: string | undefined;
   let failAbove: number | undefined;
   let github = false;
   let maxAnnotations = 20;
@@ -155,6 +157,12 @@ export function parseArgv(argv: string[]): CliCommand {
         i = ni;
         break;
       }
+      case "--out": {
+        const [val, ni] = takeValue(i, "--out", rest[i + 1]);
+        out = val;
+        i = ni;
+        break;
+      }
       default:
         if (arg.startsWith("-") && arg !== "-") {
           throw new UsageError(`unknown option: ${arg}`);
@@ -180,6 +188,7 @@ export function parseArgv(argv: string[]): CliCommand {
     prompt,
     answer,
     suite,
+    out,
     json,
     spicy,
     color,

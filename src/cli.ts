@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+import { writeFile } from "node:fs/promises";
 import { formatJson, formatPretty } from "./format.js";
 import {
   appendGitHubJobOutput,
@@ -46,7 +47,22 @@ async function main(argv: string[]): Promise<number> {
         VERSION,
       );
       
-      process.stdout.write(JSON.stringify(suiteResult, null, 2) + "\n");
+      const output = JSON.stringify(suiteResult, null, 2) + "\n";
+      
+      if (parsed.out) {
+        try {
+          await writeFile(parsed.out, output, "utf8");
+          if (!parsed.quiet) {
+            process.stderr.write(`llm-roast: wrote suite report to ${parsed.out}\n`);
+          }
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          process.stderr.write(`llm-roast: failed to write ${parsed.out}: ${message}\n`);
+          return 2;
+        }
+      }
+      
+      process.stdout.write(output);
       
       if (parsed.failAbove !== undefined && suiteResult.stats.maxScore > parsed.failAbove) {
         process.stderr.write(
@@ -130,21 +146,46 @@ async function main(argv: string[]): Promise<number> {
     }
   }
 
-  if (parsed.json) {
-    process.stdout.write(formatJson(result));
-  } else if (!parsed.quiet) {
-    if (parsed.github) {
-      process.stdout.write("::group::llm-roast report\n");
+  // Write to file when --out is set
+  if (parsed.out) {
+    const outputContent = parsed.json
+      ? formatJson(result)
+      : formatPretty(result, {
+          color: false,
+          spicy: parsed.spicy,
+          locale: parsed.locale,
+        });
+    
+    try {
+      await writeFile(parsed.out, outputContent, "utf8");
+      if (!parsed.quiet) {
+        process.stderr.write(`llm-roast: wrote report to ${parsed.out}\n`);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      process.stderr.write(`llm-roast: failed to write ${parsed.out}: ${message}\n`);
+      return 2;
     }
-    process.stdout.write(
-      formatPretty(result, {
-        color: parsed.github ? false : parsed.color,
-        spicy: parsed.spicy,
-        locale: parsed.locale,
-      }),
-    );
-    if (parsed.github) {
-      process.stdout.write("::endgroup::\n");
+  }
+
+  // Write to stdout
+  if (parsed.json || !parsed.out) {
+    if (parsed.json) {
+      process.stdout.write(formatJson(result));
+    } else if (!parsed.quiet) {
+      if (parsed.github) {
+        process.stdout.write("::group::llm-roast report\n");
+      }
+      process.stdout.write(
+        formatPretty(result, {
+          color: parsed.github ? false : parsed.color,
+          spicy: parsed.spicy,
+          locale: parsed.locale,
+        }),
+      );
+      if (parsed.github) {
+        process.stdout.write("::endgroup::\n");
+      }
     }
   }
 

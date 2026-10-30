@@ -26,7 +26,7 @@ describe("--suite batch mode", () => {
     const result = run(["--suite", examples, "--json", "--offline"]);
     expect(result.status).toBe(0);
     const json = JSON.parse(result.stdout);
-    expect(json.version).toBe("0.1.14");
+    expect(json.version).toBe("0.1.15");
     expect(json.files).toBeInstanceOf(Array);
     expect(json.files.length).toBeGreaterThanOrEqual(2);
     expect(json.stats).toBeDefined();

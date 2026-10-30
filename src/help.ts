@@ -15,6 +15,7 @@ Options:
   --answer <file>           Roast a model answer (use - for stdin)
   --suite <glob|dir>        Batch mode: glob/brace pattern or directory (≥2 files, JSON out)
                             Supports brace expansion: {a,b}, e.g. "dir/{good,bad}/*.md"
+  --out <file>              Write report to file
   --json                    Machine-readable output
   --spicy                   Harsher tone (score unchanged)
   --offline                 Skip optional API deepen even if keys are set
