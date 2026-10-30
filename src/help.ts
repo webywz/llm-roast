@@ -16,6 +16,7 @@ Options:
   --spicy               Harsher tone (score unchanged)
   --offline             Skip optional API deepen even if keys are set
   --fail-above <n>      Exit 1 when Roast Score > n (CI gate; n = 0–100)
+  --github              Emit GitHub Actions annotations (::notice/warning/error)
   --color               Force ANSI colors
   --no-color            Disable ANSI colors
   -h, --help            Show help

@@ -13,3 +13,11 @@ export type { DocumentInput } from "./roast.js";
 export { analyzeText, detectKind, scoreLabel } from "./scorer.js";
 export { formatPretty, formatJson, wantsColor } from "./format.js";
 export { parseArgv, UsageError } from "./parse.js";
+export {
+  annotation,
+  appendGitHubJobOutput,
+  escapeData,
+  escapeProperty,
+  formatGitHubAnnotations,
+} from "./github.js";
+export type { GitHubFormatOptions } from "./github.js";
