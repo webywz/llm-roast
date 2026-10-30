@@ -190,6 +190,6 @@ describe("--quiet CLI", () => {
     const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
       version: string;
     };
-    expect(pkg.version).toBe("0.1.15");
+    expect(pkg.version).toBe("0.1.16");
   });
 });

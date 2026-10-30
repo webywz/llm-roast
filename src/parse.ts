@@ -8,6 +8,8 @@ export type CliCommand =
       answer?: string;
       suite?: string;
       out?: string;
+      /** `true` = HTML on stdout; string = write that path. */
+      html?: string | true;
       json: boolean;
       spicy: boolean;
       color?: boolean;
@@ -80,6 +82,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let answer: string | undefined;
   let suite: string | undefined;
   let out: string | undefined;
+  let html: string | true | undefined;
   let failAbove: number | undefined;
   let github = false;
   let maxAnnotations = 20;
@@ -163,7 +166,22 @@ export function parseArgv(argv: string[]): CliCommand {
         i = ni;
         break;
       }
+      case "--html": {
+        const next = rest[i + 1];
+        if (next && !next.startsWith("-")) {
+          html = next;
+          i += 1;
+        } else {
+          html = true;
+        }
+        break;
+      }
       default:
+        if (arg.startsWith("--html=")) {
+          const inline = arg.slice("--html=".length);
+          html = inline === "" ? true : inline;
+          break;
+        }
         if (arg.startsWith("-") && arg !== "-") {
           throw new UsageError(`unknown option: ${arg}`);
         }
@@ -180,6 +198,12 @@ export function parseArgv(argv: string[]): CliCommand {
   if (suite && (positionals.length > 0 || prompt || answer)) {
     throw new UsageError("--suite cannot be combined with file arguments or --prompt/--answer");
   }
+  if (html && json) {
+    throw new UsageError("--html cannot be combined with --json (choose one primary export)");
+  }
+  if (html && suite) {
+    throw new UsageError("--html cannot be combined with --suite (suite is JSON-only)");
+  }
 
   const positional = positionals[0];
   return {
@@ -189,6 +213,7 @@ export function parseArgv(argv: string[]): CliCommand {
     answer,
     suite,
     out,
+    html,
     json,
     spicy,
     color,

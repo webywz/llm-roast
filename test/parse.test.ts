@@ -38,6 +38,8 @@ describe("parseArgv", () => {
       prompt: "p.txt",
       answer: "a.txt",
       suite: undefined,
+      out: undefined,
+      html: undefined,
       json: true,
       spicy: true,
       color: false,
@@ -104,6 +106,38 @@ describe("parseArgv", () => {
   it("accepts stdin dash", () => {
     expect(parseArgv(["-"])).toMatchObject({ positional: "-", cmd: "roast" });
     expect(parseArgv(["--prompt", "-"])).toMatchObject({ prompt: "-", cmd: "roast" });
+  });
+
+  it("parses --html as stdout or optional path", () => {
+    expect(parseArgv(["--html", "notes.md"])).toMatchObject({
+      cmd: "roast",
+      html: "notes.md",
+    });
+    expect(parseArgv(["--html", "--offline", "notes.md"])).toMatchObject({
+      html: true,
+      deepen: false,
+      positional: "notes.md",
+    });
+    expect(parseArgv(["--html=report.html", "notes.md"])).toMatchObject({
+      html: "report.html",
+      positional: "notes.md",
+    });
+    expect(parseArgv(["notes.md", "--html"])).toMatchObject({
+      positional: "notes.md",
+      html: true,
+    });
+  });
+
+  it("rejects --html with --json or --suite", () => {
+    expect(() => parseArgv(["--html", "--json", "notes.md"])).toThrow(
+      /cannot be combined with --json/,
+    );
+    expect(() => parseArgv(["--html", "out.html", "--json"])).toThrow(
+      /cannot be combined with --json/,
+    );
+    expect(() => parseArgv(["--suite", "examples", "--html"])).toThrow(
+      /cannot be combined with --suite/,
+    );
   });
 
   it("rejects unknown flags and mixed modes", () => {

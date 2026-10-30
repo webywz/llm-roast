@@ -44,6 +44,8 @@ llm-roast --prompt p.txt --answer a.txt
 cat answer.md | llm-roast
 llm-roast - < prompt.txt
 llm-roast --json answer.md
+llm-roast --html --offline answer.md
+llm-roast --html report.html --offline answer.md
 llm-roast --out report.txt answer.md
 llm-roast --spicy answer.md
 llm-roast --offline --fail-above 60 answer.md
@@ -61,6 +63,7 @@ llm-roast --locale zh --offline answer.md
 | `--answer <file>` | Force answer rules (`-` = stdin) · 按回答规则打分 |
 | `--suite <glob\|dir>` | Batch mode: roast ≥2 files from glob/directory (JSON output) · 批处理模式：对 glob/目录中 ≥2 个文件打分（JSON 输出） |
 | `--out <file>` | Write report to file · 将报告写入文件 |
+| `--html [path]` | Self-contained HTML roast report (stdout, or write to path; offline, no CDN) · 自包含 HTML 吐槽报告（stdout 或写入路径；离线、无 CDN） |
 | `--json` | Machine-readable result · 机器可读输出 |
 | `--spicy` | Harsher tone; **score unchanged** · 文案更狠；**分数不变** |
 | `--offline` | Skip the optional API encore · 跳过可选 API 加戏 |
@@ -96,7 +99,7 @@ Suite mode requires **≥2** roastable files (`.txt`, `.md`, `.markdown`). Suppo
 
 ```json
 {
-  "version": "0.1.14",
+  "version": "0.1.16",
   "files": [
     { "path": "examples/answer.md", "score": 73, "label": "yikes", "kind": "answer", "wordCount": 89 },
     { "path": "examples/prompt.txt", "score": 58, "label": "caution", "kind": "prompt", "wordCount": 42 }
@@ -173,6 +176,8 @@ const both = roastDocuments([
   **CI 门禁** — 仍会打印吐槽；仅当分数超过阈值时以 `1` 退出。
 - **GitHub annotations** — `--github` emits Actions notices/warnings/errors for PR UI; optional Job Summary + `--max-annotations`; `--quiet` for annotations-only CI logs.
   **GitHub 注解** — `--github` 输出 Actions notice/warning/error；可选 Job Summary 与 `--max-annotations`；`--quiet` 只留注解不打漂亮报告。
+- **HTML export** — `--html` emits a self-contained offline roast (score, findings, spicy/summary). Omit the path for stdout; give a path to write the file (parent dirs created). `--html` and `--json` cannot share stdout.
+  **HTML 导出** — `--html` 写出离线自包含吐槽报告（分数、findings、spicy/summary）。省略路径打印到 stdout；给出路径则写文件（自动创建父目录）。`--html` 与 `--json` 不能同时占用 stdout。
 - **Optional deepen** — with `OPENAI_API_KEY` (preferred) or `ANTHROPIC_API_KEY`, one extra paragraph after the heuristic roast. Failures and timeouts stay quiet. `--offline` skips it.
   **可选加深** — 有 OpenAI（优先）或 Anthropic Key 时，启发式之后多一段评语；失败 / 超时静默。`--offline` 跳过。
 
