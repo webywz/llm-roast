@@ -44,6 +44,7 @@ llm-roast --prompt p.txt --answer a.txt
 cat answer.md | llm-roast
 llm-roast - < prompt.txt
 llm-roast --json answer.md
+llm-roast --out report.txt answer.md
 llm-roast --spicy answer.md
 llm-roast --offline --fail-above 60 answer.md
 llm-roast --suite "examples/*.md" --json
@@ -59,6 +60,7 @@ llm-roast --locale zh --offline answer.md
 | `--prompt <file>` | Force prompt-smell rules (`-` = stdin) · 按 prompt 气味规则打分 |
 | `--answer <file>` | Force answer rules (`-` = stdin) · 按回答规则打分 |
 | `--suite <glob\|dir>` | Batch mode: roast ≥2 files from glob/directory (JSON output) · 批处理模式：对 glob/目录中 ≥2 个文件打分（JSON 输出） |
+| `--out <file>` | Write report to file · 将报告写入文件 |
 | `--json` | Machine-readable result · 机器可读输出 |
 | `--spicy` | Harsher tone; **score unchanged** · 文案更狠；**分数不变** |
 | `--offline` | Skip the optional API encore · 跳过可选 API 加戏 |
