@@ -194,6 +194,8 @@ describe("--out with --suite", () => {
         "examples",
         "--out",
         outFile,
+        "--fail-above",
+        "100",
       ]);
       expect(result.status).toBe(0);
       expect(result.stderr).toMatch(/wrote suite report to/);
@@ -224,6 +226,8 @@ describe("--out with --suite", () => {
         "--out",
         outFile,
         "--quiet",
+        "--fail-above",
+        "100",
       ]);
       expect(result.status).toBe(0);
       expect(result.stderr).not.toMatch(/wrote suite report to/);
