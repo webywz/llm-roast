@@ -46,6 +46,7 @@ llm-roast - < prompt.txt
 llm-roast --json answer.md
 llm-roast --spicy answer.md
 llm-roast --offline --fail-above 60 answer.md
+llm-roast --github --offline answer.md
 ```
 
 | Flag | What it does · 作用 |
@@ -56,6 +57,7 @@ llm-roast --offline --fail-above 60 answer.md
 | `--spicy` | Harsher tone; **score unchanged** · 文案更狠；**分数不变** |
 | `--offline` | Skip the optional API encore · 跳过可选 API 加戏 |
 | `--fail-above <n>` | Exit `1` when Roast Score **>** `n` (0–100) · 分数 **大于** `n` 时退出码 `1` |
+| `--github` | Emit GitHub Actions `::notice` / `::warning` / `::error` annotations · 输出 Actions 注解，PR Checks 可见 |
 | `--color` / `--no-color` | Force / disable ANSI color · 强制 / 关闭颜色 |
 | `-h` / `-v` | Help / version · 帮助 / 版本 |
 
@@ -68,10 +70,18 @@ Fixtures: [`examples/prompt.txt`](examples/prompt.txt) · [`examples/answer.md`]
 示例：`examples/prompt.txt` 与 `examples/answer.md`。
 
 ```yaml
-# GitHub Actions
+# GitHub Actions — annotations + CI gate
 - name: Roast gate
-  run: npx @webywz/llm-roast --offline --fail-above 60 path/to/answer.md
+  run: npx @webywz/llm-roast --offline --github --fail-above 60 path/to/answer.md
 ```
+
+Copy-paste workflow: [`examples/github-actions.yml`](examples/github-actions.yml).
+
+可直接复制的 workflow：[`examples/github-actions.yml`](examples/github-actions.yml)。
+
+`--github` prints workflow commands (`::warning file=…::…`) so Checks show score and findings. High severity → `error`, medium → `warning`, low → `notice`; score bands use the same scale. With `GITHUB_OUTPUT` set it also writes `score`, `label`, `findings`. Combine with `--json` and annotations go to stderr so stdout stays parseable. Works together with `--fail-above` (annotations still emit, then exit `1` when over the gate).
+
+`--github` 输出 workflow 命令，PR Checks 能直接看到分数与 findings。高严重 → `error`，中 → `warning`，低 → `notice`；总分按档位映射。在 Actions 里还会写 `GITHUB_OUTPUT`（`score` / `label` / `findings`）。与 `--json` 联用时注解走 stderr，stdout 仍是干净 JSON。可与 `--fail-above` 组合：先出注解，超阈再以 `1` 退出。
 
 `--fail-above 100` never fails (score tops at 100). `--fail-above 0` fails on any non-zero score.
 
@@ -107,6 +117,8 @@ const both = roastDocuments([
   **文案确定** — 相同输入得到相同吐槽；`--spicy` 只改语气。
 - **CI gate** — `--fail-above` still prints the roast, then exits `1` only when the score exceeds the threshold.
   **CI 门禁** — 仍会打印吐槽；仅当分数超过阈值时以 `1` 退出。
+- **GitHub annotations** — `--github` emits Actions notices/warnings/errors for PR UI.
+  **GitHub 注解** — `--github` 输出 Actions notice/warning/error，PR 界面可见。
 - **Optional deepen** — with `OPENAI_API_KEY` (preferred) or `ANTHROPIC_API_KEY`, one extra paragraph after the heuristic roast. Failures and timeouts stay quiet. `--offline` skips it.
   **可选加深** — 有 OpenAI（优先）或 Anthropic Key 时，启发式之后多一段评语；失败 / 超时静默。`--offline` 跳过。
 

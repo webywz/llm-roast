@@ -1,0 +1,42 @@
+# Example: surface roast findings as PR annotations + optional CI gate.
+# Copy into your app repo as .github/workflows/llm-roast.yml
+# and point PATH at the prompts / answers you care about.
+#
+# 示例：把 roast 发现做成 PR 注解 + 可选门禁。
+# 复制到业务仓的 .github/workflows/llm-roast.yml，改 PATH 即可。
+
+name: LLM roast
+
+on:
+  pull_request:
+    paths:
+      - "prompts/**"
+      - "evals/**"
+      - "**/*prompt*"
+      - "**/*answer*"
+
+jobs:
+  llm-roast:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Roast (annotations + CI gate)
+        id: roast
+        run: |
+          npx --yes @webywz/llm-roast@^0.1.3 \
+            --offline \
+            --github \
+            --fail-above 60 \
+            path/to/answer.md
+        # --github  → ::notice / ::warning / ::error on the PR Checks UI
+        # --fail-above → exit 1 when Roast Score exceeds the gate
+        # When GITHUB_OUTPUT is set, also writes: score, label, findings
+
+      # Optional: use job outputs from a composite / later step
+      # - name: Echo score
+      #   run: echo "roast ${{ steps.roast.outputs.score }} (${{ steps.roast.outputs.label }})"

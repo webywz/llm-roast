@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 import { formatJson, formatPretty } from "./format.js";
+import {
+  appendGitHubJobOutput,
+  formatGitHubAnnotations,
+} from "./github.js";
 import { HELP } from "./help.js";
 import { basename, readSource } from "./io.js";
 import { parseArgv, UsageError } from "./parse.js";
@@ -75,8 +79,29 @@ async function main(argv: string[]): Promise<number> {
   }
 
   const result = await roastDocumentsAsync(docs, parsed.spicy, parsed.deepen);
+
+  if (parsed.github) {
+    const ann = formatGitHubAnnotations(result);
+    // Keep --json stdout machine-parseable; annotations ride on stderr.
+    if (parsed.json) process.stderr.write(ann);
+    else process.stdout.write(ann);
+    try {
+      appendGitHubJobOutput(result);
+    } catch (err) {
+      process.stderr.write(
+        `llm-roast: GITHUB_OUTPUT skipped (${err instanceof Error ? err.message : err})\n`,
+      );
+    }
+  }
+
   if (parsed.json) {
     process.stdout.write(formatJson(result));
+  } else if (parsed.github) {
+    process.stdout.write("::group::llm-roast report\n");
+    process.stdout.write(
+      formatPretty(result, { color: false, spicy: parsed.spicy }),
+    );
+    process.stdout.write("::endgroup::\n");
   } else {
     process.stdout.write(formatPretty(result, { color: parsed.color, spicy: parsed.spicy }));
   }

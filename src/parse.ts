@@ -12,6 +12,8 @@ export type CliCommand =
       deepen: boolean;
       /** Exit non-zero when Roast Score exceeds this (0–100). */
       failAbove?: number;
+      /** Emit GitHub Actions workflow annotations. */
+      github: boolean;
     };
 
 export class UsageError extends Error {
@@ -45,6 +47,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let prompt: string | undefined;
   let answer: string | undefined;
   let failAbove: number | undefined;
+  let github = false;
   const positionals: string[] = [];
 
   const takeValue = (i: number, flag: string, next?: string): [string, number] => {
@@ -83,6 +86,9 @@ export function parseArgv(argv: string[]): CliCommand {
         i += 1;
         break;
       }
+      case "--github":
+        github = true;
+        break;
       case "--prompt": {
         const [val, ni] = takeValue(i, "--prompt", rest[i + 1]);
         prompt = val;
@@ -121,5 +127,6 @@ export function parseArgv(argv: string[]): CliCommand {
     color,
     deepen,
     failAbove,
+    github,
   };
 }

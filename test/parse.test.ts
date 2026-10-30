@@ -41,6 +41,15 @@ describe("parseArgv", () => {
       color: false,
       deepen: false,
       failAbove: undefined,
+      github: false,
+    });
+  });
+
+  it("parses --github", () => {
+    expect(parseArgv(["--github", "notes.md"])).toMatchObject({
+      cmd: "roast",
+      github: true,
+      positional: "notes.md",
     });
   });
 
