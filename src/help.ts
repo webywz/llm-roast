@@ -18,6 +18,7 @@ Options:
   --fail-above <n>          Exit 1 when Roast Score > n (CI gate; n = 0–100)
   --github                  Emit GitHub Actions annotations (::notice/warning/error)
   --max-annotations <n>     Cap GitHub annotation lines (default: 20)
+  --quiet                   Suppress the pretty terminal report (--json / --github still emit)
   --color                   Force ANSI colors
   --no-color                Disable ANSI colors
   -h, --help                Show help
@@ -30,4 +31,5 @@ Higher Roast Score = more roastable (0–100).
 With --github, annotations go to stdout (or stderr when combined with --json).
 Job outputs score/label/findings are written when GITHUB_OUTPUT is set.
 A short Markdown job summary is appended when GITHUB_STEP_SUMMARY is set.
+--quiet hides the pretty report only.
 `;

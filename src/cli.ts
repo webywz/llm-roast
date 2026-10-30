@@ -106,14 +106,19 @@ async function main(argv: string[]): Promise<number> {
 
   if (parsed.json) {
     process.stdout.write(formatJson(result));
-  } else if (parsed.github) {
-    process.stdout.write("::group::llm-roast report\n");
+  } else if (!parsed.quiet) {
+    if (parsed.github) {
+      process.stdout.write("::group::llm-roast report\n");
+    }
     process.stdout.write(
-      formatPretty(result, { color: false, spicy: parsed.spicy }),
+      formatPretty(result, {
+        color: parsed.github ? false : parsed.color,
+        spicy: parsed.spicy,
+      }),
     );
-    process.stdout.write("::endgroup::\n");
-  } else {
-    process.stdout.write(formatPretty(result, { color: parsed.color, spicy: parsed.spicy }));
+    if (parsed.github) {
+      process.stdout.write("::endgroup::\n");
+    }
   }
 
   if (parsed.failAbove !== undefined && result.score > parsed.failAbove) {
