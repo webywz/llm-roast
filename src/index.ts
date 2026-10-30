@@ -12,6 +12,7 @@ export { roastText, roastDocuments, roastDocumentsAsync, VERSION } from "./roast
 export type { DocumentInput } from "./roast.js";
 export { analyzeText, detectKind, scoreLabel } from "./scorer.js";
 export { formatPretty, formatJson, wantsColor } from "./format.js";
+export { formatHtml, escapeHtml } from "./html.js";
 export { parseArgv, UsageError } from "./parse.js";
 export {
   annotation,

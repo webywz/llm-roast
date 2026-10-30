@@ -56,7 +56,7 @@ jobs:
           echo "$out" | grep -E '::(error|warning|notice) ' >/dev/null
           ! echo "$out" | grep -q '::group::'
           test -z "$(node dist/cli.js --offline --quiet --no-color examples/answer.md)"
-          node dist/cli.js --version | grep -qx '0.1.15'
+          node dist/cli.js --version | grep -qx '0.1.16'
           # --out smoke tests
           out_file="$(mktemp)"
           node dist/cli.js --offline --no-color --out "$out_file" examples/answer.md
@@ -69,12 +69,32 @@ jobs:
           json_stdout="$(node dist/cli.js --offline --out "$out_json_file" --json examples/answer.md)"
           test -s "$out_json_file"
           echo "$json_stdout" | grep -q '"score":'
-          echo "$json_stdout" | grep -q '"version": "0.1.15"'
+          echo "$json_stdout" | grep -q '"version": "0.1.16"'
           cat "$out_json_file" | grep -q '"score":'
           rm -f "$out_json_file"
+          # --html stdout: self-contained report, no CDN
+          html_stdout="$(node dist/cli.js --offline --html --no-color examples/answer.md)"
+          echo "$html_stdout" | grep -q '<!DOCTYPE html>'
+          echo "$html_stdout" | grep -q 'llm-roast'
+          echo "$html_stdout" | grep -q 'Roast Score'
+          ! echo "$html_stdout" | grep -qiE 'cdn\.|unpkg|jsdelivr|fonts\.googleapis'
+          # --html path: write file, do not dump HTML to stdout
+          html_dir="$(mktemp -d)"
+          html_file="$html_dir/nested/report.html"
+          html_path_stdout="$(node dist/cli.js --offline --html "$html_file" --no-color examples/answer.md)"
+          test -s "$html_file"
+          grep -q '<!DOCTYPE html>' "$html_file"
+          grep -q 'Roast Score' "$html_file"
+          ! echo "$html_path_stdout" | grep -q '<!DOCTYPE html>'
+          rm -rf "$html_dir"
+          # --html --json is rejected
+          if node dist/cli.js --offline --html --json examples/answer.md; then
+            echo "expected --html --json to fail" >&2
+            exit 1
+          fi
           # Suite mode smoke tests
           suite_out="$(node dist/cli.js --suite examples --json --offline)"
-          echo "$suite_out" | grep -q '"version": "0.1.15"'
+          echo "$suite_out" | grep -q '"version": "0.1.16"'
           echo "$suite_out" | grep -q '"count":'
           count="$(echo "$suite_out" | grep -o '"count": [0-9]*' | grep -o '[0-9]*')"
           test "$count" -ge 2

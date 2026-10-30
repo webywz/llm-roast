@@ -1,6 +1,8 @@
 #!/usr/bin/env node
-import { writeFile } from "node:fs/promises";
+import { mkdir, writeFile } from "node:fs/promises";
+import { dirname } from "node:path";
 import { formatJson, formatPretty } from "./format.js";
+import { formatHtml } from "./html.js";
 import {
   appendGitHubJobOutput,
   appendGitHubStepSummary,
@@ -123,12 +125,15 @@ async function main(argv: string[]): Promise<number> {
 
   const result = await roastDocumentsAsync(docs, parsed.spicy, parsed.deepen);
 
+  const htmlOnStdout = parsed.html === true;
+  const htmlPath = typeof parsed.html === "string" ? parsed.html : undefined;
+
   if (parsed.github) {
     const ann = formatGitHubAnnotations(result, {
       maxAnnotations: parsed.maxAnnotations,
     });
-    // Keep --json stdout machine-parseable; annotations ride on stderr.
-    if (parsed.json) process.stderr.write(ann);
+    // Keep --json / --html stdout parseable; annotations ride on stderr.
+    if (parsed.json || htmlOnStdout) process.stderr.write(ann);
     else process.stdout.write(ann);
     try {
       appendGitHubJobOutput(result);
@@ -168,24 +173,40 @@ async function main(argv: string[]): Promise<number> {
     }
   }
 
+  if (htmlPath) {
+    const html = formatHtml(result, { locale: parsed.locale, spicy: parsed.spicy });
+    try {
+      await mkdir(dirname(htmlPath), { recursive: true });
+      await writeFile(htmlPath, html.endsWith("\n") ? html : `${html}\n`, "utf8");
+      if (!parsed.quiet) {
+        process.stderr.write(`llm-roast: wrote html report to ${htmlPath}\n`);
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      process.stderr.write(`llm-roast: failed to write ${htmlPath}: ${message}\n`);
+      return 2;
+    }
+  }
+
   // Write to stdout
-  if (parsed.json || !parsed.out) {
-    if (parsed.json) {
-      process.stdout.write(formatJson(result));
-    } else if (!parsed.quiet) {
-      if (parsed.github) {
-        process.stdout.write("::group::llm-roast report\n");
-      }
-      process.stdout.write(
-        formatPretty(result, {
-          color: parsed.github ? false : parsed.color,
-          spicy: parsed.spicy,
-          locale: parsed.locale,
-        }),
-      );
-      if (parsed.github) {
-        process.stdout.write("::endgroup::\n");
-      }
+  if (parsed.json) {
+    process.stdout.write(formatJson(result));
+  } else if (htmlOnStdout) {
+    const html = formatHtml(result, { locale: parsed.locale, spicy: parsed.spicy });
+    process.stdout.write(html.endsWith("\n") ? html : `${html}\n`);
+  } else if (!parsed.out && !htmlPath && !parsed.quiet) {
+    if (parsed.github) {
+      process.stdout.write("::group::llm-roast report\n");
+    }
+    process.stdout.write(
+      formatPretty(result, {
+        color: parsed.github ? false : parsed.color,
+        spicy: parsed.spicy,
+        locale: parsed.locale,
+      }),
+    );
+    if (parsed.github) {
+      process.stdout.write("::endgroup::\n");
     }
   }
 
