@@ -45,4 +45,9 @@ jobs:
           fi
           node dist/cli.js --offline --no-color --fail-above 100 examples/answer.md
           node dist/cli.js --offline --github --max-annotations 2 --no-color examples/answer.md | head -n 5
-          node dist/cli.js --version | grep -qx '0.1.4'
+          # --quiet: annotations only (no pretty group)
+          out="$(node dist/cli.js --offline --github --quiet --max-annotations 2 --no-color examples/answer.md)"
+          echo "$out" | grep -E '::(error|warning|notice) ' >/dev/null
+          echo "$out" | grep -qv '::group::'
+          node dist/cli.js --offline --quiet --no-color examples/answer.md | grep -qx ''
+          node dist/cli.js --version | grep -qx '0.1.5'
