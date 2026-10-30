@@ -50,4 +50,4 @@ jobs:
           echo "$out" | grep -E '::(error|warning|notice) ' >/dev/null
           ! echo "$out" | grep -q '::group::'
           test -z "$(node dist/cli.js --offline --quiet --no-color examples/answer.md)"
-          node dist/cli.js --version | grep -qx '0.1.8'
+          node dist/cli.js --version | grep -qx '0.1.9'
