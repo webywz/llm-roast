@@ -56,10 +56,25 @@ jobs:
           echo "$out" | grep -E '::(error|warning|notice) ' >/dev/null
           ! echo "$out" | grep -q '::group::'
           test -z "$(node dist/cli.js --offline --quiet --no-color examples/answer.md)"
-          node dist/cli.js --version | grep -qx '0.1.14'
+          node dist/cli.js --version | grep -qx '0.1.15'
+          # --out smoke tests
+          out_file="$(mktemp)"
+          node dist/cli.js --offline --no-color --out "$out_file" examples/answer.md
+          test -s "$out_file"
+          grep -q 'Roast Score' "$out_file"
+          grep -q 'burnt offering' "$out_file"
+          rm -f "$out_file"
+          # --out --json: file gets JSON, stdout also gets JSON
+          out_json_file="$(mktemp)"
+          json_stdout="$(node dist/cli.js --offline --out "$out_json_file" --json examples/answer.md)"
+          test -s "$out_json_file"
+          echo "$json_stdout" | grep -q '"score":'
+          echo "$json_stdout" | grep -q '"version": "0.1.15"'
+          cat "$out_json_file" | grep -q '"score":'
+          rm -f "$out_json_file"
           # Suite mode smoke tests
           suite_out="$(node dist/cli.js --suite examples --json --offline)"
-          echo "$suite_out" | grep -q '"version": "0.1.14"'
+          echo "$suite_out" | grep -q '"version": "0.1.15"'
           echo "$suite_out" | grep -q '"count":'
           count="$(echo "$suite_out" | grep -o '"count": [0-9]*' | grep -o '[0-9]*')"
           test "$count" -ge 2
