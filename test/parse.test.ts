@@ -40,7 +40,18 @@ describe("parseArgv", () => {
       spicy: true,
       color: false,
       deepen: false,
+      failAbove: undefined,
     });
+  });
+
+  it("parses --fail-above threshold", () => {
+    expect(parseArgv(["--fail-above", "60", "notes.md"])).toMatchObject({
+      cmd: "roast",
+      failAbove: 60,
+      positional: "notes.md",
+    });
+    expect(parseArgv(["notes.md", "--fail-above", "0"])).toMatchObject({ failAbove: 0 });
+    expect(parseArgv(["--fail-above", "100"])).toMatchObject({ failAbove: 100 });
   });
 
   it("accepts stdin dash", () => {
@@ -53,5 +64,13 @@ describe("parseArgv", () => {
     expect(() => parseArgv(["file.txt", "other.txt"])).toThrow(/at most one file/);
     expect(() => parseArgv(["file.txt", "--prompt", "p.txt"])).toThrow(/not both/);
     expect(() => parseArgv(["--prompt"])).toThrow(/requires a file path/);
+  });
+
+  it("rejects bad --fail-above values", () => {
+    expect(() => parseArgv(["--fail-above"])).toThrow(/integer from 0 to 100/);
+    expect(() => parseArgv(["--fail-above", "nope"])).toThrow(/integer from 0 to 100/);
+    expect(() => parseArgv(["--fail-above", "1.5"])).toThrow(/integer from 0 to 100/);
+    expect(() => parseArgv(["--fail-above", "-1"])).toThrow(/integer from 0 to 100/);
+    expect(() => parseArgv(["--fail-above", "101"])).toThrow(/integer from 0 to 100/);
   });
 });

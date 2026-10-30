@@ -10,6 +10,8 @@ export type CliCommand =
       spicy: boolean;
       color?: boolean;
       deepen: boolean;
+      /** Exit non-zero when Roast Score exceeds this (0–100). */
+      failAbove?: number;
     };
 
 export class UsageError extends Error {
@@ -20,6 +22,20 @@ export class UsageError extends Error {
   }
 }
 
+function parseFailAbove(raw: string | undefined): number {
+  if (raw === undefined || raw === "") {
+    throw new UsageError("--fail-above requires an integer from 0 to 100");
+  }
+  if (!/^\d+$/.test(raw)) {
+    throw new UsageError("--fail-above requires an integer from 0 to 100");
+  }
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 0 || n > 100) {
+    throw new UsageError("--fail-above requires an integer from 0 to 100");
+  }
+  return n;
+}
+
 export function parseArgv(argv: string[]): CliCommand {
   const rest = argv[0] === "--" ? argv.slice(1) : argv.slice();
   let json = false;
@@ -28,6 +44,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let color: boolean | undefined;
   let prompt: string | undefined;
   let answer: string | undefined;
+  let failAbove: number | undefined;
   const positionals: string[] = [];
 
   const takeValue = (i: number, flag: string, next?: string): [string, number] => {
@@ -61,6 +78,11 @@ export function parseArgv(argv: string[]): CliCommand {
       case "--color":
         color = true;
         break;
+      case "--fail-above": {
+        failAbove = parseFailAbove(rest[i + 1]);
+        i += 1;
+        break;
+      }
       case "--prompt": {
         const [val, ni] = takeValue(i, "--prompt", rest[i + 1]);
         prompt = val;
@@ -98,5 +120,6 @@ export function parseArgv(argv: string[]): CliCommand {
     spicy,
     color,
     deepen,
+    failAbove,
   };
 }
