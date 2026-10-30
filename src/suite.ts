@@ -37,7 +37,40 @@ function matchesPattern(filename: string, pattern: string): boolean {
   return regex.test(filename);
 }
 
+function expandBraces(pattern: string): string[] {
+  const braceRegex = /\{([^{}]+)\}/;
+  const match = pattern.match(braceRegex);
+  
+  if (!match || !match[1]) {
+    return [pattern];
+  }
+  
+  const fullMatch = match[0];
+  const content = match[1];
+  const options = content.split(",").map((s) => s.trim());
+  const results: string[] = [];
+  
+  for (const option of options) {
+    const expanded = pattern.replace(fullMatch, option);
+    results.push(...expandBraces(expanded));
+  }
+  
+  return results;
+}
+
 async function expandGlob(pattern: string): Promise<string[]> {
+  const expandedPatterns = expandBraces(pattern);
+  const allFiles = new Set<string>();
+  
+  for (const pat of expandedPatterns) {
+    const files = await expandSingleGlob(pat);
+    files.forEach((f) => allFiles.add(f));
+  }
+  
+  return Array.from(allFiles).sort();
+}
+
+async function expandSingleGlob(pattern: string): Promise<string[]> {
   const resolved = resolve(pattern);
   
   try {

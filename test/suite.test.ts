@@ -26,7 +26,7 @@ describe("--suite batch mode", () => {
     const result = run(["--suite", examples, "--json", "--offline"]);
     expect(result.status).toBe(0);
     const json = JSON.parse(result.stdout);
-    expect(json.version).toBe("0.1.12");
+    expect(json.version).toBe("0.1.13");
     expect(json.files).toBeInstanceOf(Array);
     expect(json.files.length).toBeGreaterThanOrEqual(2);
     expect(json.stats).toBeDefined();
@@ -94,5 +94,28 @@ describe("--suite batch mode", () => {
     const help = run(["--help"]);
     expect(help.status).toBe(0);
     expect(help.stdout).toMatch(/--suite/);
+  });
+
+  it("expands brace patterns and roasts multiple files", () => {
+    build();
+    const result = run(["--suite", "examples/{answer,bad-answer}.md", "--json", "--offline"]);
+    expect(result.status).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.files).toBeInstanceOf(Array);
+    expect(json.files.length).toBe(2);
+    expect(json.files[0].path).toMatch(/answer\.md$/);
+    expect(json.files[1].path).toMatch(/bad-answer\.md$/);
+    expect(json.stats.count).toBe(2);
+  });
+
+  it("expands complex brace patterns with wildcards", () => {
+    build();
+    const result = run(["--suite", "examples/{answer,bad-answer}.md", "--json", "--offline"]);
+    expect(result.status).toBe(0);
+    const json = JSON.parse(result.stdout);
+    expect(json.files.length).toBeGreaterThanOrEqual(2);
+    json.files.forEach((file: any) => {
+      expect(file.path).toMatch(/\/(answer|bad-answer)\.md$/);
+    });
   });
 });
