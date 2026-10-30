@@ -44,3 +44,5 @@ jobs:
             exit 1
           fi
           node dist/cli.js --offline --no-color --fail-above 100 examples/answer.md
+          node dist/cli.js --offline --github --max-annotations 2 --no-color examples/answer.md | head -n 5
+          node dist/cli.js --version | grep -qx '0.1.4'

@@ -5,9 +5,11 @@ import { describe, expect, it } from "vitest";
 import {
   annotation,
   appendGitHubJobOutput,
+  appendGitHubStepSummary,
   escapeData,
   escapeProperty,
   formatGitHubAnnotations,
+  formatGitHubStepSummary,
 } from "../src/github.js";
 import { roastDocuments } from "../src/roast.js";
 import type { Finding, RoastResult } from "../src/types.js";
@@ -110,6 +112,55 @@ describe("github annotations", () => {
       if (prev === undefined) delete process.env.GITHUB_OUTPUT;
       else process.env.GITHUB_OUTPUT = prev;
       rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("formats a concise step summary", () => {
+    const md = formatGitHubStepSummary(
+      miniResult([
+        fixtureFinding({ severity: "high", title: "High fluff", kind: "fluff" }),
+        fixtureFinding({ severity: "low", title: "Low hedge", kind: "hedge" }),
+      ], 72),
+    );
+    expect(md).toMatch(/## llm-roast/);
+    expect(md).toMatch(/\*\*Roast Score\*\*/);
+    expect(md).toMatch(/72\/100/);
+    expect(md).toMatch(/Key findings/);
+    expect(md).toMatch(/High fluff/);
+  });
+
+  it("step summary notes clean roast when no findings", () => {
+    const md = formatGitHubStepSummary(miniResult([], 12));
+    expect(md).toMatch(/## llm-roast/);
+    expect(md).toMatch(/No findings|clean roast/i);
+  });
+
+  it("appends step summary when GITHUB_STEP_SUMMARY is set", () => {
+    const dir = mkdtempSync(join(tmpdir(), "llm-roast-gh-sum-"));
+    const outFile = join(dir, "step_summary.md");
+    const prev = process.env.GITHUB_STEP_SUMMARY;
+    try {
+      process.env.GITHUB_STEP_SUMMARY = outFile;
+      appendGitHubStepSummary(miniResult([], 33));
+      const body = readFileSync(outFile, "utf8");
+      expect(body).toMatch(/## llm-roast/);
+      expect(body).toMatch(/Roast Score/);
+      expect(body).toMatch(/33\/100/);
+    } finally {
+      if (prev === undefined) delete process.env.GITHUB_STEP_SUMMARY;
+      else process.env.GITHUB_STEP_SUMMARY = prev;
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("no-ops step summary when GITHUB_STEP_SUMMARY is unset", () => {
+    const prev = process.env.GITHUB_STEP_SUMMARY;
+    try {
+      delete process.env.GITHUB_STEP_SUMMARY;
+      appendGitHubStepSummary(miniResult([], 1)); // must not throw
+    } finally {
+      if (prev === undefined) delete process.env.GITHUB_STEP_SUMMARY;
+      else process.env.GITHUB_STEP_SUMMARY = prev;
     }
   });
 });

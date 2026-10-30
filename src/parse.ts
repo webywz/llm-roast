@@ -14,6 +14,8 @@ export type CliCommand =
       failAbove?: number;
       /** Emit GitHub Actions workflow annotations. */
       github: boolean;
+      /** Soft cap for GitHub annotation lines (default 20). */
+      maxAnnotations: number;
     };
 
 export class UsageError extends Error {
@@ -38,6 +40,20 @@ function parseFailAbove(raw: string | undefined): number {
   return n;
 }
 
+function parseMaxAnnotations(raw: string | undefined): number {
+  if (raw === undefined || raw === "") {
+    throw new UsageError("--max-annotations must be a positive integer");
+  }
+  if (!/^\d+$/.test(raw)) {
+    throw new UsageError("--max-annotations must be a positive integer");
+  }
+  const n = Number(raw);
+  if (!Number.isInteger(n) || n < 1) {
+    throw new UsageError("--max-annotations must be a positive integer");
+  }
+  return n;
+}
+
 export function parseArgv(argv: string[]): CliCommand {
   const rest = argv[0] === "--" ? argv.slice(1) : argv.slice();
   let json = false;
@@ -48,6 +64,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let answer: string | undefined;
   let failAbove: number | undefined;
   let github = false;
+  let maxAnnotations = 20;
   const positionals: string[] = [];
 
   const takeValue = (i: number, flag: string, next?: string): [string, number] => {
@@ -83,6 +100,11 @@ export function parseArgv(argv: string[]): CliCommand {
         break;
       case "--fail-above": {
         failAbove = parseFailAbove(rest[i + 1]);
+        i += 1;
+        break;
+      }
+      case "--max-annotations": {
+        maxAnnotations = parseMaxAnnotations(rest[i + 1]);
         i += 1;
         break;
       }
@@ -128,5 +150,6 @@ export function parseArgv(argv: string[]): CliCommand {
     deepen,
     failAbove,
     github,
+    maxAnnotations,
   };
 }
