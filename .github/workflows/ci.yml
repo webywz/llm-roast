@@ -48,6 +48,6 @@ jobs:
           # --quiet: annotations only (no pretty group)
           out="$(node dist/cli.js --offline --github --quiet --max-annotations 2 --no-color examples/answer.md)"
           echo "$out" | grep -E '::(error|warning|notice) ' >/dev/null
-          echo "$out" | grep -qv '::group::'
-          node dist/cli.js --offline --quiet --no-color examples/answer.md | grep -qx ''
+          ! echo "$out" | grep -q '::group::'
+          test -z "$(node dist/cli.js --offline --quiet --no-color examples/answer.md)"
           node dist/cli.js --version | grep -qx '0.1.5'
