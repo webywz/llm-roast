@@ -82,7 +82,7 @@ describe("--github CLI", () => {
   it("rejects non-positive --max-annotations", () => {
     build();
     const result = run(["--offline", "--github", "--max-annotations", "0", answer]);
-    expect(result.status).toBe(1);
+    expect(result.status).toBe(2);
     expect(result.stderr).toMatch(/max-annotations/);
   });
 
@@ -190,6 +190,6 @@ describe("--quiet CLI", () => {
     const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
       version: string;
     };
-    expect(pkg.version).toBe("0.1.11");
+    expect(pkg.version).toBe("0.1.12");
   });
 });

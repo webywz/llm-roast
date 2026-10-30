@@ -44,10 +44,25 @@ jobs:
             exit 1
           fi
           node dist/cli.js --offline --no-color --fail-above 100 examples/answer.md
-          node dist/cli.js --offline --github --max-annotations 2 --no-color examples/answer.md | head -n 5
+          # Capture --github output to avoid SIGPIPE from head
+          github_out="$(node dist/cli.js --offline --github --max-annotations 2 --no-color examples/answer.md)"
+          echo "$github_out" | head -n 5
           # --quiet: annotations only (no pretty group)
           out="$(node dist/cli.js --offline --github --quiet --max-annotations 2 --no-color examples/answer.md)"
           echo "$out" | grep -E '::(error|warning|notice) ' >/dev/null
           ! echo "$out" | grep -q '::group::'
           test -z "$(node dist/cli.js --offline --quiet --no-color examples/answer.md)"
-          node dist/cli.js --version | grep -qx '0.1.11'
+          node dist/cli.js --version | grep -qx '0.1.12'
+          # Suite mode smoke tests
+          suite_out="$(node dist/cli.js --suite examples --json --offline)"
+          echo "$suite_out" | grep -q '"version": "0.1.12"'
+          echo "$suite_out" | grep -q '"count":'
+          count="$(echo "$suite_out" | grep -o '"count": [0-9]*' | grep -o '[0-9]*')"
+          test "$count" -ge 2
+          # Suite --fail-above should exit 1 when maxScore exceeds threshold
+          if node dist/cli.js --suite examples --json --offline --fail-above 30; then
+            echo "expected suite --fail-above 30 to exit non-zero" >&2
+            exit 1
+          fi
+          # Suite --fail-above should pass when threshold not exceeded
+          node dist/cli.js --suite examples --json --offline --fail-above 100
