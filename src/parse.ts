@@ -6,6 +6,7 @@ export type CliCommand =
       positional?: string;
       prompt?: string;
       answer?: string;
+      suite?: string;
       json: boolean;
       spicy: boolean;
       color?: boolean;
@@ -64,6 +65,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let color: boolean | undefined;
   let prompt: string | undefined;
   let answer: string | undefined;
+  let suite: string | undefined;
   let failAbove: number | undefined;
   let github = false;
   let maxAnnotations = 20;
@@ -129,6 +131,12 @@ export function parseArgv(argv: string[]): CliCommand {
         i = ni;
         break;
       }
+      case "--suite": {
+        const [val, ni] = takeValue(i, "--suite", rest[i + 1]);
+        suite = val;
+        i = ni;
+        break;
+      }
       default:
         if (arg.startsWith("-") && arg !== "-") {
           throw new UsageError(`unknown option: ${arg}`);
@@ -143,6 +151,9 @@ export function parseArgv(argv: string[]): CliCommand {
   if (positionals.length === 1 && (prompt || answer)) {
     throw new UsageError("pass either a file argument or --prompt/--answer, not both");
   }
+  if (suite && (positionals.length > 0 || prompt || answer)) {
+    throw new UsageError("--suite cannot be combined with file arguments or --prompt/--answer");
+  }
 
   const positional = positionals[0];
   return {
@@ -150,6 +161,7 @@ export function parseArgv(argv: string[]): CliCommand {
     positional,
     prompt,
     answer,
+    suite,
     json,
     spicy,
     color,

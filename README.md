@@ -46,6 +46,8 @@ llm-roast - < prompt.txt
 llm-roast --json answer.md
 llm-roast --spicy answer.md
 llm-roast --offline --fail-above 60 answer.md
+llm-roast --suite "examples/*.md" --json
+llm-roast --suite examples --json --fail-above 60
 llm-roast --github --offline answer.md
 llm-roast --github --quiet --offline answer.md
 llm-roast --github --max-annotations 10 --offline answer.md
@@ -55,10 +57,11 @@ llm-roast --github --max-annotations 10 --offline answer.md
 | --- | --- |
 | `--prompt <file>` | Force prompt-smell rules (`-` = stdin) · 按 prompt 气味规则打分 |
 | `--answer <file>` | Force answer rules (`-` = stdin) · 按回答规则打分 |
+| `--suite <glob\|dir>` | Batch mode: roast ≥2 files from glob/directory (JSON output) · 批处理模式：对 glob/目录中 ≥2 个文件打分（JSON 输出） |
 | `--json` | Machine-readable result · 机器可读输出 |
 | `--spicy` | Harsher tone; **score unchanged** · 文案更狠；**分数不变** |
 | `--offline` | Skip the optional API encore · 跳过可选 API 加戏 |
-| `--fail-above <n>` | Exit `1` when Roast Score **>** `n` (0–100) · 分数 **大于** `n` 时退出码 `1` |
+| `--fail-above <n>` | Exit `1` when Roast Score **>** `n` (suite: maxScore **>** n; 0–100) · 分数 **大于** `n` 时退出码 `1`（suite: maxScore **大于** n） |
 | `--github` | Emit GitHub Actions `::notice` / `::warning` / `::error` annotations · 输出 Actions 注解，PR Checks 可见 |
 | `--max-annotations <n>` | Cap annotation lines with `--github` (default `20`) · 限制 `--github` 注解条数（默认 20） |
 | `--quiet` | Suppress the pretty terminal report; `--json` / `--github` still emit · 抑制漂亮终端报告；`--json` / `--github` 仍照常输出 |
@@ -68,6 +71,47 @@ llm-roast --github --max-annotations 10 --offline answer.md
 A bare file is auto-classified from the name (`prompt`, `answer`, `response`, …) or opening lines (`you are` vs `as an AI`).
 
 单文件会按文件名或开头几行自动判断是 prompt 还是 answer。
+
+### Suite / batch mode · 批处理模式
+
+Roast multiple files in one run with `--suite <glob|dir>`:
+
+一次对多个文件打分，使用 `--suite <glob|dir>`：
+
+```bash
+llm-roast --suite "examples/*.md" --json
+llm-roast --suite examples --json
+llm-roast --suite "examples/*.{txt,md}" --json --fail-above 60
+```
+
+Suite mode requires **≥2** roastable files (`.txt`, `.md`, `.markdown`). Output is **always JSON** with per-file results and aggregated stats:
+
+批处理模式需要 **≥2** 个可打分文件（`.txt`、`.md`、`.markdown`）。输出**始终为 JSON**，包含每个文件的结果与汇总统计：
+
+```json
+{
+  "version": "0.1.12",
+  "files": [
+    { "path": "examples/answer.md", "score": 73, "label": "yikes", "kind": "answer", "wordCount": 89 },
+    { "path": "examples/prompt.txt", "score": 58, "label": "caution", "kind": "prompt", "wordCount": 42 }
+  ],
+  "stats": {
+    "count": 2,
+    "maxScore": 73,
+    "avgScore": 66,
+    "failCount": 0
+  }
+}
+```
+
+**`--fail-above` in suite mode** applies to **`stats.maxScore`** (the highest score across all files). Exit code `1` when `maxScore > threshold`.
+
+**批处理模式下的 `--fail-above`** 应用于 **`stats.maxScore`**（所有文件中的最高分）。当 `maxScore > 阈值` 时退出码为 `1`。
+
+**Exit codes · 退出码:**
+- `0` — Success · 成功
+- `1` — `--fail-above` threshold exceeded · 超过 `--fail-above` 阈值
+- `2` — Usage error or I/O failure · 用法错误或 I/O 失败
 
 Fixtures: [`examples/prompt.txt`](examples/prompt.txt) · [`examples/answer.md`](examples/answer.md).
 

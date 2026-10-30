@@ -1,0 +1,1 @@
+Configure your build system to run tests before deployment. Use environment variables for secrets. Monitor your application logs.

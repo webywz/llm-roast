@@ -9,6 +9,7 @@ import { HELP } from "./help.js";
 import { basename, readSource } from "./io.js";
 import { parseArgv, UsageError } from "./parse.js";
 import { roastDocumentsAsync, VERSION } from "./roast.js";
+import { processSuite } from "./suite.js";
 import type { DocumentInput } from "./roast.js";
 
 function stdinIsPiped(): boolean {
@@ -22,7 +23,7 @@ async function main(argv: string[]): Promise<number> {
   } catch (err) {
     if (err instanceof UsageError) {
       process.stderr.write(`llm-roast: ${err.message}\n\n${HELP}`);
-      return 1;
+      return 2;
     }
     throw err;
   }
@@ -34,6 +35,31 @@ async function main(argv: string[]): Promise<number> {
   if (parsed.cmd === "version") {
     process.stdout.write(`${VERSION}\n`);
     return 0;
+  }
+
+  if (parsed.suite) {
+    try {
+      const suiteResult = await processSuite(
+        parsed.suite,
+        parsed.spicy,
+        parsed.deepen,
+        VERSION,
+      );
+      
+      process.stdout.write(JSON.stringify(suiteResult, null, 2) + "\n");
+      
+      if (parsed.failAbove !== undefined && suiteResult.stats.maxScore > parsed.failAbove) {
+        process.stderr.write(
+          `llm-roast: suite maxScore ${suiteResult.stats.maxScore} exceeds --fail-above ${parsed.failAbove}\n`,
+        );
+        return 1;
+      }
+      return 0;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      process.stderr.write(`llm-roast: ${message}\n`);
+      return 2;
+    }
   }
 
   const stdinOnce = { used: false };
@@ -76,7 +102,7 @@ async function main(argv: string[]): Promise<number> {
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     process.stderr.write(`llm-roast: ${message}\n`);
-    return 1;
+    return 2;
   }
 
   const result = await roastDocumentsAsync(docs, parsed.spicy, parsed.deepen);
