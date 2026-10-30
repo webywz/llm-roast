@@ -183,13 +183,13 @@ describe("--quiet CLI", () => {
     }
   });
 
-  it("pins examples workflow to ^0.1.6 with --quiet", () => {
+  it("pins examples workflow to ^0.1.7 with --quiet", () => {
     const example = readFileSync(join(root, "examples/github-actions.yml"), "utf8");
     expect(example).toMatch(/@webywz\/llm-roast@\^0\.1\.5/);
     expect(example).toMatch(/--quiet/);
     const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
       version: string;
     };
-    expect(pkg.version).toBe("0.1.6");
+    expect(pkg.version).toBe("0.1.7");
   });
 });
