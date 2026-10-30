@@ -28,7 +28,7 @@ jobs:
       - name: Roast (annotations + CI gate)
         id: roast
         run: |
-          npx --yes @webywz/llm-roast@^0.1.6 \
+          npx --yes @webywz/llm-roast@^0.1.9 \
             --offline \
             --github \
             --quiet \
