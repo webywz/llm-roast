@@ -2,6 +2,7 @@
 import { formatJson, formatPretty } from "./format.js";
 import {
   appendGitHubJobOutput,
+  appendGitHubStepSummary,
   formatGitHubAnnotations,
 } from "./github.js";
 import { HELP } from "./help.js";
@@ -81,7 +82,9 @@ async function main(argv: string[]): Promise<number> {
   const result = await roastDocumentsAsync(docs, parsed.spicy, parsed.deepen);
 
   if (parsed.github) {
-    const ann = formatGitHubAnnotations(result);
+    const ann = formatGitHubAnnotations(result, {
+      maxAnnotations: parsed.maxAnnotations,
+    });
     // Keep --json stdout machine-parseable; annotations ride on stderr.
     if (parsed.json) process.stderr.write(ann);
     else process.stdout.write(ann);
@@ -90,6 +93,13 @@ async function main(argv: string[]): Promise<number> {
     } catch (err) {
       process.stderr.write(
         `llm-roast: GITHUB_OUTPUT skipped (${err instanceof Error ? err.message : err})\n`,
+      );
+    }
+    try {
+      appendGitHubStepSummary(result);
+    } catch (err) {
+      process.stderr.write(
+        `llm-roast: GITHUB_STEP_SUMMARY skipped (${err instanceof Error ? err.message : err})\n`,
       );
     }
   }

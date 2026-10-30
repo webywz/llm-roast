@@ -16,8 +16,10 @@ export { parseArgv, UsageError } from "./parse.js";
 export {
   annotation,
   appendGitHubJobOutput,
+  appendGitHubStepSummary,
   escapeData,
   escapeProperty,
   formatGitHubAnnotations,
+  formatGitHubStepSummary,
 } from "./github.js";
 export type { GitHubFormatOptions } from "./github.js";

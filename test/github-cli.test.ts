@@ -29,6 +29,8 @@ describe("--github CLI", () => {
     expect(help.status).toBe(0);
     expect(help.stdout).toMatch(/--github/);
     expect(help.stdout).toMatch(/GitHub Actions annotations/);
+    expect(help.stdout).toMatch(/--max-annotations/);
+    expect(help.stdout).toMatch(/GITHUB_STEP_SUMMARY/);
   });
 
   it("emits Actions annotations with --github", () => {
@@ -71,6 +73,46 @@ describe("--github CLI", () => {
       expect(body).toMatch(/^score=\d+$/m);
       expect(body).toMatch(/^label=.+$/m);
       expect(body).toMatch(/^findings=\d+$/m);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects non-positive --max-annotations", () => {
+    build();
+    const result = run(["--offline", "--github", "--max-annotations", "0", answer]);
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/max-annotations/);
+  });
+
+  it("honors --max-annotations with --github", () => {
+    build();
+    const result = run([
+      "--offline",
+      "--github",
+      "--max-annotations",
+      "1",
+      answer,
+    ]);
+    expect(result.status).toBe(0);
+    const annLines = result.stdout
+      .split("\n")
+      .filter((l) => /^::(error|warning|notice) /.test(l));
+    expect(annLines).toHaveLength(1);
+  });
+
+  it("writes GITHUB_STEP_SUMMARY with --github", () => {
+    build();
+    const dir = mkdtempSync(join(tmpdir(), "llm-roast-gh-sum-cli-"));
+    const sumFile = join(dir, "step_summary.md");
+    try {
+      const result = run(["--offline", "--github", answer], {
+        GITHUB_STEP_SUMMARY: sumFile,
+      });
+      expect(result.status).toBe(0);
+      const body = readFileSync(sumFile, "utf8");
+      expect(body).toMatch(/## llm-roast/);
+      expect(body).toMatch(/Roast Score/);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

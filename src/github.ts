@@ -119,3 +119,51 @@ export function appendGitHubJobOutput(result: RoastResult): void {
   ].join("\n");
   appendFileSync(path, `${body}\n`, "utf8");
 }
+
+/** Build a short Markdown Job Summary for Actions (no env I/O). */
+export function formatGitHubStepSummary(result: RoastResult): string {
+  const findingsCount = result.targets.reduce((n, t) => n + t.findings.length, 0);
+  const lines: string[] = [
+    "## llm-roast",
+    "",
+    `| | |`,
+    `| --- | --- |`,
+    `| **Roast Score** | ${result.score}/100 (\`${result.label}\`) |`,
+    `| **Findings** | ${findingsCount} |`,
+    `| **Targets** | ${result.targets.map((t) => `${t.kind}:${t.source}`).join(", ") || "—"} |`,
+    "",
+  ];
+
+  if (result.summary) {
+    lines.push(`_${result.summary}_`, "");
+  }
+
+  const ranked = result.targets
+    .flatMap((t) => t.findings.map((f) => ({ finding: f, source: t.source })))
+    .sort((a, b) => SEVERITY_RANK[a.finding.severity] - SEVERITY_RANK[b.finding.severity]);
+
+  if (ranked.length === 0) {
+    lines.push("_No findings — clean roast._", "");
+    return lines.join("\n");
+  }
+
+  const findings: string[] = [];
+  for (const { finding, source } of ranked.slice(0, 8)) {
+    const where = source && source !== "stdin" ? ` (\`${source}\`)` : "";
+    findings.push(
+      `- **${finding.severity}** · ${finding.kind}: ${finding.title}${where}`,
+    );
+  }
+  lines.push("### Key findings", "", ...findings, "");
+  return lines.join("\n");
+}
+
+/**
+ * Append a concise Job Summary when running inside Actions (`GITHUB_STEP_SUMMARY`).
+ * No-op when the env var is unset.
+ */
+export function appendGitHubStepSummary(result: RoastResult): void {
+  const path = process.env.GITHUB_STEP_SUMMARY;
+  if (!path) return;
+  appendFileSync(path, `${formatGitHubStepSummary(result)}\n`, "utf8");
+}

@@ -16,6 +16,7 @@ describe("parseArgv", () => {
       json: false,
       spicy: false,
       deepen: true,
+      maxAnnotations: 20,
     });
   });
 
@@ -42,6 +43,7 @@ describe("parseArgv", () => {
       deepen: false,
       failAbove: undefined,
       github: false,
+      maxAnnotations: 20,
     });
   });
 
@@ -63,6 +65,22 @@ describe("parseArgv", () => {
     expect(parseArgv(["--fail-above", "100"])).toMatchObject({ failAbove: 100 });
   });
 
+  it("parses --max-annotations", () => {
+    expect(parseArgv(["--max-annotations", "5", "notes.md"])).toMatchObject({
+      cmd: "roast",
+      maxAnnotations: 5,
+      positional: "notes.md",
+    });
+    expect(parseArgv(["--github", "--max-annotations", "1"])).toMatchObject({
+      github: true,
+      maxAnnotations: 1,
+    });
+  });
+
+  it("defaults maxAnnotations to 20", () => {
+    expect(parseArgv(["notes.md"])).toMatchObject({ maxAnnotations: 20 });
+  });
+
   it("accepts stdin dash", () => {
     expect(parseArgv(["-"])).toMatchObject({ positional: "-", cmd: "roast" });
     expect(parseArgv(["--prompt", "-"])).toMatchObject({ prompt: "-", cmd: "roast" });
@@ -81,5 +99,13 @@ describe("parseArgv", () => {
     expect(() => parseArgv(["--fail-above", "1.5"])).toThrow(/integer from 0 to 100/);
     expect(() => parseArgv(["--fail-above", "-1"])).toThrow(/integer from 0 to 100/);
     expect(() => parseArgv(["--fail-above", "101"])).toThrow(/integer from 0 to 100/);
+  });
+
+  it("rejects bad --max-annotations values", () => {
+    expect(() => parseArgv(["--max-annotations"])).toThrow(/positive integer/);
+    expect(() => parseArgv(["--max-annotations", "0"])).toThrow(/positive integer/);
+    expect(() => parseArgv(["--max-annotations", "-1"])).toThrow(/positive integer/);
+    expect(() => parseArgv(["--max-annotations", "1.5"])).toThrow(/positive integer/);
+    expect(() => parseArgv(["--max-annotations", "nope"])).toThrow(/positive integer/);
   });
 });
