@@ -35,6 +35,7 @@ cat answer.md | llm-roast
 llm-roast - < prompt.txt
 llm-roast --json answer.md
 llm-roast --spicy answer.md
+llm-roast --fail-above 60 answer.md
 ```
 
 | Flag | What it does |
@@ -44,6 +45,7 @@ llm-roast --spicy answer.md
 | `--json` | Machine-readable result |
 | `--spicy` | Harsher tone; **score is unchanged** |
 | `--offline` | Skip the optional API encore |
+| `--fail-above <n>` | Exit `1` when Roast Score **>** `n` (CI gate; `n` = 0–100) |
 | `--color` / `--no-color` | Force / disable ANSI color |
 
 A single file is auto-classified from the name (`prompt`, `answer`, `response`, …) or from opening lines (`you are` vs `as an AI`).
@@ -71,7 +73,7 @@ llm-roast --prompt examples/prompt.txt --answer examples/answer.md
 ```
 
 ```
-🔥 llm-roast  v0.1.1
+🔥 llm-roast  v0.1.2
 ────────────────────────────────────────────────────────────
 Roast Score  [100/100]  ██████████████████████  burnt offering
 
@@ -152,7 +154,7 @@ llm-roast --json --prompt p.txt --answer a.txt
 
 ```json
 {
-  "version": "0.1.1",
+  "version": "0.1.2",
   "score": 100,
   "label": "burnt offering",
   "spicy": false,
@@ -174,6 +176,25 @@ llm-roast --json --prompt p.txt --answer a.txt
   ]
 }
 ```
+
+## CI gate
+
+Fail the job when a prompt or answer is too roastable (overconfidence / fluff / hallucination vibes). Still prints the roast to the log; exits `1` only when the score **exceeds** the threshold.
+
+```bash
+llm-roast --offline --fail-above 60 path/to/answer.md
+```
+
+GitHub Actions one-liner:
+
+```yaml
+- name: Roast gate
+  run: npx @webywz/llm-roast --offline --fail-above 60 path/to/answer.md
+```
+
+`--fail-above 100` never fails (score tops out at 100). `--fail-above 0` fails on any non-zero score.
+
+## Optional deepen
 
 ## Optional deepen
 

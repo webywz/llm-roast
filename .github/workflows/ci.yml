@@ -38,3 +38,9 @@ jobs:
           node dist/cli.js --offline --no-color examples/answer.md
           node dist/cli.js --json --offline --prompt examples/prompt.txt --answer examples/answer.md
           printf 'Use Node 20 test runner with node:assert/strict.\n' | node dist/cli.js --offline --no-color --json
+          # dumpster-fire fixture scores 100 → must fail below 100, pass at 100
+          if node dist/cli.js --offline --no-color --fail-above 50 examples/answer.md; then
+            echo "expected --fail-above 50 to exit non-zero" >&2
+            exit 1
+          fi
+          node dist/cli.js --offline --no-color --fail-above 100 examples/answer.md

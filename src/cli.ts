@@ -80,6 +80,13 @@ async function main(argv: string[]): Promise<number> {
   } else {
     process.stdout.write(formatPretty(result, { color: parsed.color, spicy: parsed.spicy }));
   }
+
+  if (parsed.failAbove !== undefined && result.score > parsed.failAbove) {
+    process.stderr.write(
+      `llm-roast: roast score ${result.score} exceeds --fail-above ${parsed.failAbove}\n`,
+    );
+    return 1;
+  }
   return 0;
 }
 
