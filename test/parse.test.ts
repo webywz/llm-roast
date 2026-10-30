@@ -44,6 +44,7 @@ describe("parseArgv", () => {
       failAbove: undefined,
       github: false,
       maxAnnotations: 20,
+      quiet: false,
     });
   });
 
@@ -53,6 +54,23 @@ describe("parseArgv", () => {
       github: true,
       positional: "notes.md",
     });
+  });
+
+  it("parses --quiet", () => {
+    expect(parseArgv(["--quiet", "notes.md"])).toMatchObject({
+      cmd: "roast",
+      quiet: true,
+      positional: "notes.md",
+    });
+    expect(parseArgv(["--github", "--quiet", "--json"])).toMatchObject({
+      github: true,
+      quiet: true,
+      json: true,
+    });
+  });
+
+  it("defaults quiet to false", () => {
+    expect(parseArgv(["notes.md"])).toMatchObject({ quiet: false });
   });
 
   it("parses --fail-above threshold", () => {

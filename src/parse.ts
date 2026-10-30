@@ -16,6 +16,8 @@ export type CliCommand =
       github: boolean;
       /** Soft cap for GitHub annotation lines (default 20). */
       maxAnnotations: number;
+      /** Suppress the pretty terminal report (--json / --github still emit). */
+      quiet: boolean;
     };
 
 export class UsageError extends Error {
@@ -65,6 +67,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let failAbove: number | undefined;
   let github = false;
   let maxAnnotations = 20;
+  let quiet = false;
   const positionals: string[] = [];
 
   const takeValue = (i: number, flag: string, next?: string): [string, number] => {
@@ -111,6 +114,9 @@ export function parseArgv(argv: string[]): CliCommand {
       case "--github":
         github = true;
         break;
+      case "--quiet":
+        quiet = true;
+        break;
       case "--prompt": {
         const [val, ni] = takeValue(i, "--prompt", rest[i + 1]);
         prompt = val;
@@ -151,5 +157,6 @@ export function parseArgv(argv: string[]): CliCommand {
     failAbove,
     github,
     maxAnnotations,
+    quiet,
   };
 }

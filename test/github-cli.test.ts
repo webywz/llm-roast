@@ -30,6 +30,7 @@ describe("--github CLI", () => {
     expect(help.stdout).toMatch(/--github/);
     expect(help.stdout).toMatch(/GitHub Actions annotations/);
     expect(help.stdout).toMatch(/--max-annotations/);
+    expect(help.stdout).toMatch(/--quiet/);
     expect(help.stdout).toMatch(/GITHUB_STEP_SUMMARY/);
   });
 
@@ -116,5 +117,79 @@ describe("--github CLI", () => {
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+});
+
+describe("--quiet CLI", () => {
+  it("suppresses the pretty report with --quiet", () => {
+    build();
+    const result = run(["--offline", "--quiet", answer]);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toBe("");
+    expect(result.stderr).not.toMatch(/Roast Score/);
+  });
+
+  it("keeps --json stdout with --quiet", () => {
+    build();
+    const result = run(["--offline", "--quiet", "--json", answer]);
+    expect(result.status).toBe(0);
+    const parsed = JSON.parse(result.stdout);
+    expect(parsed).toHaveProperty("score");
+    expect(result.stdout).not.toMatch(/Roast Score/);
+  });
+
+  it("keeps --github annotations with --quiet (no pretty group)", () => {
+    build();
+    const result = run(["--offline", "--github", "--quiet", answer]);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toMatch(/::(error|warning|notice) /);
+    expect(result.stdout).not.toMatch(/::group::llm-roast report/);
+    expect(result.stdout).not.toMatch(/::endgroup::/);
+  });
+
+  it("writes GITHUB_OUTPUT with --github --quiet", () => {
+    build();
+    const dir = mkdtempSync(join(tmpdir(), "llm-roast-quiet-out-"));
+    const outFile = join(dir, "github_output");
+    try {
+      const result = run(["--offline", "--github", "--quiet", answer], {
+        GITHUB_OUTPUT: outFile,
+      });
+      expect(result.status).toBe(0);
+      const body = readFileSync(outFile, "utf8");
+      expect(body).toMatch(/^score=\d+$/m);
+      expect(body).toMatch(/^findings=\d+$/m);
+      expect(result.stdout).toMatch(/::(error|warning|notice) /);
+      expect(result.stdout.includes("::group::")).toBe(false);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("writes GITHUB_STEP_SUMMARY with --github --quiet", () => {
+    build();
+    const dir = mkdtempSync(join(tmpdir(), "llm-roast-quiet-sum-"));
+    const sumFile = join(dir, "step_summary.md");
+    try {
+      const result = run(["--offline", "--github", "--quiet", answer], {
+        GITHUB_STEP_SUMMARY: sumFile,
+      });
+      expect(result.status).toBe(0);
+      const body = readFileSync(sumFile, "utf8");
+      expect(body).toMatch(/## llm-roast/);
+      expect(result.stdout).not.toMatch(/::group::/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("pins examples workflow to ^0.1.5 with --quiet", () => {
+    const example = readFileSync(join(root, "examples/github-actions.yml"), "utf8");
+    expect(example).toMatch(/@webywz\/llm-roast@\^0\.1\.5/);
+    expect(example).toMatch(/--quiet/);
+    const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8")) as {
+      version: string;
+    };
+    expect(pkg.version).toBe("0.1.5");
   });
 });

@@ -28,13 +28,15 @@ jobs:
       - name: Roast (annotations + CI gate)
         id: roast
         run: |
-          npx --yes @webywz/llm-roast@^0.1.4 \
+          npx --yes @webywz/llm-roast@^0.1.5 \
             --offline \
             --github \
+            --quiet \
             --fail-above 60 \
             --max-annotations 20 \
             path/to/answer.md
         # --github           → ::notice / ::warning / ::error on the PR Checks UI
+        # --quiet            → suppress the pretty terminal report (annotations / summary / outputs still emit)
         # --fail-above       → exit 1 when Roast Score exceeds the gate
         # --max-annotations  → soft-cap annotation noise (default 20)
         # When GITHUB_OUTPUT is set, also writes: score, label, findings
