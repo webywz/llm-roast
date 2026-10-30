@@ -19,6 +19,8 @@ export type CliCommand =
       maxAnnotations: number;
       /** Suppress the pretty terminal report (--json / --github still emit). */
       quiet: boolean;
+      /** Locale for terminal output (en or zh). */
+      locale: "en" | "zh";
     };
 
 export class UsageError extends Error {
@@ -27,6 +29,16 @@ export class UsageError extends Error {
     super(message);
     Object.setPrototypeOf(this, new.target.prototype);
   }
+}
+
+function parseLocale(raw: string | undefined): "en" | "zh" {
+  if (raw === undefined || raw === "") {
+    throw new UsageError('--locale requires "en" or "zh"');
+  }
+  if (raw !== "en" && raw !== "zh") {
+    throw new UsageError('--locale must be "en" or "zh"');
+  }
+  return raw;
 }
 
 function parseFailAbove(raw: string | undefined): number {
@@ -70,6 +82,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let github = false;
   let maxAnnotations = 20;
   let quiet = false;
+  let locale: "en" | "zh" = "en";
   const positionals: string[] = [];
 
   const takeValue = (i: number, flag: string, next?: string): [string, number] => {
@@ -119,6 +132,11 @@ export function parseArgv(argv: string[]): CliCommand {
       case "--quiet":
         quiet = true;
         break;
+      case "--locale": {
+        locale = parseLocale(rest[i + 1]);
+        i += 1;
+        break;
+      }
       case "--prompt": {
         const [val, ni] = takeValue(i, "--prompt", rest[i + 1]);
         prompt = val;
@@ -170,5 +188,6 @@ export function parseArgv(argv: string[]): CliCommand {
     github,
     maxAnnotations,
     quiet,
+    locale,
   };
 }

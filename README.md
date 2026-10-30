@@ -51,6 +51,7 @@ llm-roast --suite examples --json --fail-above 60
 llm-roast --github --offline answer.md
 llm-roast --github --quiet --offline answer.md
 llm-roast --github --max-annotations 10 --offline answer.md
+llm-roast --locale zh --offline answer.md
 ```
 
 | Flag | What it does · 作用 |
@@ -62,6 +63,7 @@ llm-roast --github --max-annotations 10 --offline answer.md
 | `--spicy` | Harsher tone; **score unchanged** · 文案更狠；**分数不变** |
 | `--offline` | Skip the optional API encore · 跳过可选 API 加戏 |
 | `--fail-above <n>` | Exit `1` when Roast Score **>** `n` (suite: maxScore **>** n; 0–100) · 分数 **大于** `n` 时退出码 `1`（suite: maxScore **大于** n） |
+| `--locale <en\|zh>` | Terminal output locale (default `en`; JSON keys unchanged) · 终端输出语言（默认 `en`；JSON 键名不变） |
 | `--github` | Emit GitHub Actions `::notice` / `::warning` / `::error` annotations · 输出 Actions 注解，PR Checks 可见 |
 | `--max-annotations <n>` | Cap annotation lines with `--github` (default `20`) · 限制 `--github` 注解条数（默认 20） |
 | `--quiet` | Suppress the pretty terminal report; `--json` / `--github` still emit · 抑制漂亮终端报告；`--json` / `--github` 仍照常输出 |
@@ -92,7 +94,7 @@ Suite mode requires **≥2** roastable files (`.txt`, `.md`, `.markdown`). Suppo
 
 ```json
 {
-  "version": "0.1.13",
+  "version": "0.1.14",
   "files": [
     { "path": "examples/answer.md", "score": 73, "label": "yikes", "kind": "answer", "wordCount": 89 },
     { "path": "examples/prompt.txt", "score": 58, "label": "caution", "kind": "prompt", "wordCount": 42 }

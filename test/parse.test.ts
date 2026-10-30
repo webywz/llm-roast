@@ -37,6 +37,7 @@ describe("parseArgv", () => {
       positional: undefined,
       prompt: "p.txt",
       answer: "a.txt",
+      suite: undefined,
       json: true,
       spicy: true,
       color: false,
@@ -45,6 +46,7 @@ describe("parseArgv", () => {
       github: false,
       maxAnnotations: 20,
       quiet: false,
+      locale: "en",
     });
   });
 
