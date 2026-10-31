@@ -17,6 +17,7 @@ Options:
                             Supports brace expansion: {a,b}, e.g. "dir/{good,bad}/*.md"
   --out <file>              Write report to file
   --html [path]             Self-contained HTML report (stdout, or write to path; offline, no CDN)
+  --theme <name>            HTML palette: ember (default), fog, midnight, paper
   --json                    Machine-readable output
   --spicy                   Harsher tone (score unchanged)
   --offline                 Skip optional API deepen even if keys are set
@@ -47,4 +48,5 @@ Job outputs score/label/findings are written when GITHUB_OUTPUT is set.
 A short Markdown job summary is appended when GITHUB_STEP_SUMMARY is set.
 --quiet hides the pretty report only.
 --html and --json cannot share stdout; pick one primary export.
+--theme only restyles --html (ember = 0.1.16 look). Pretty / JSON / GitHub / scoring unchanged.
 `;

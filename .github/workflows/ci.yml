@@ -56,7 +56,7 @@ jobs:
           echo "$out" | grep -E '::(error|warning|notice) ' >/dev/null
           ! echo "$out" | grep -q '::group::'
           test -z "$(node dist/cli.js --offline --quiet --no-color examples/answer.md)"
-          node dist/cli.js --version | grep -qx '0.1.16'
+          node dist/cli.js --version | grep -qx '0.1.17'
           # --out smoke tests
           out_file="$(mktemp)"
           node dist/cli.js --offline --no-color --out "$out_file" examples/answer.md
@@ -69,7 +69,7 @@ jobs:
           json_stdout="$(node dist/cli.js --offline --out "$out_json_file" --json examples/answer.md)"
           test -s "$out_json_file"
           echo "$json_stdout" | grep -q '"score":'
-          echo "$json_stdout" | grep -q '"version": "0.1.16"'
+          echo "$json_stdout" | grep -q '"version": "0.1.17"'
           cat "$out_json_file" | grep -q '"score":'
           rm -f "$out_json_file"
           # --html stdout: self-contained report, no CDN
@@ -92,9 +92,27 @@ jobs:
             echo "expected --html --json to fail" >&2
             exit 1
           fi
+          # --theme: default ≡ ember; fog is distinct; unknown name fails
+          html_default="$(node dist/cli.js --offline --html --no-color examples/answer.md)"
+          html_ember="$(node dist/cli.js --offline --html --theme ember --no-color examples/answer.md)"
+          html_fog="$(node dist/cli.js --offline --html --theme fog --no-color examples/answer.md)"
+          echo "$html_default" | grep -q -- '--bg: #1a1b26'
+          echo "$html_ember" | grep -q -- '--bg: #1a1b26'
+          echo "$html_fog" | grep -q -- '--bg: #e8eef4'
+          test "$html_default" = "$html_ember"
+          if node dist/cli.js --offline --html --theme nope examples/answer.md; then
+            echo "expected --theme nope to fail" >&2
+            exit 1
+          fi
+          # --html --theme still works with --fail-above / --github / --quiet
+          node dist/cli.js --offline --html --theme midnight --fail-above 100 --no-color examples/answer.md | grep -q '<!DOCTYPE html>'
+          gh_html="$(node dist/cli.js --offline --html --theme paper --github --quiet --no-color examples/answer.md 2>/tmp/gh_html_err)"
+          echo "$gh_html" | grep -q '<!DOCTYPE html>'
+          echo "$gh_html" | grep -q -- '--bg: #f6f0e4'
+          grep -E '::(error|warning|notice) ' /tmp/gh_html_err >/dev/null
           # Suite mode smoke tests
           suite_out="$(node dist/cli.js --suite examples --json --offline)"
-          echo "$suite_out" | grep -q '"version": "0.1.16"'
+          echo "$suite_out" | grep -q '"version": "0.1.17"'
           echo "$suite_out" | grep -q '"count":'
           count="$(echo "$suite_out" | grep -o '"count": [0-9]*' | grep -o '[0-9]*')"
           test "$count" -ge 2

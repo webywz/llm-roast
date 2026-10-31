@@ -174,7 +174,11 @@ async function main(argv: string[]): Promise<number> {
   }
 
   if (htmlPath) {
-    const html = formatHtml(result, { locale: parsed.locale, spicy: parsed.spicy });
+    const html = formatHtml(result, {
+      locale: parsed.locale,
+      spicy: parsed.spicy,
+      theme: parsed.theme,
+    });
     try {
       await mkdir(dirname(htmlPath), { recursive: true });
       await writeFile(htmlPath, html.endsWith("\n") ? html : `${html}\n`, "utf8");
@@ -192,7 +196,11 @@ async function main(argv: string[]): Promise<number> {
   if (parsed.json) {
     process.stdout.write(formatJson(result));
   } else if (htmlOnStdout) {
-    const html = formatHtml(result, { locale: parsed.locale, spicy: parsed.spicy });
+    const html = formatHtml(result, {
+      locale: parsed.locale,
+      spicy: parsed.spicy,
+      theme: parsed.theme,
+    });
     process.stdout.write(html.endsWith("\n") ? html : `${html}\n`);
   } else if (!parsed.out && !htmlPath && !parsed.quiet) {
     if (parsed.github) {

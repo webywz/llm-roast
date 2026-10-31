@@ -1,5 +1,118 @@
-import type { FormatOptions, Finding, RoastResult, TargetResult } from "./types.js";
+import type { FormatOptions, Finding, HtmlTheme, RoastResult, TargetResult } from "./types.js";
+import { DEFAULT_HTML_THEME } from "./types.js";
 import { getStrings } from "./locale.js";
+
+export { DEFAULT_HTML_THEME, HTML_THEMES, isHtmlTheme } from "./types.js";
+export type { HtmlTheme } from "./types.js";
+
+/** CSS custom properties for each HTML palette. `ember` matches 0.1.16 exactly. */
+export const THEME_TOKENS: Record<HtmlTheme, Record<string, string>> = {
+  ember: {
+    "--bg": "#1a1b26",
+    "--bg-deep": "#16161e",
+    "--panel": "#1f2335",
+    "--border": "#3b4261",
+    "--text": "#c0caf5",
+    "--muted": "#565f89",
+    "--blue": "#7aa2f7",
+    "--cyan": "#7dcfff",
+    "--green": "#9ece6a",
+    "--orange": "#ff9e64",
+    "--red": "#f7768e",
+    "--yellow": "#e0af68",
+    "--purple": "#bb9af7",
+    "--font": 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace',
+  },
+  fog: {
+    "--bg": "#e8eef4",
+    "--bg-deep": "#f7f9fc",
+    "--panel": "#dce4ee",
+    "--border": "#b4c0d0",
+    "--text": "#243044",
+    "--muted": "#6b7a8d",
+    "--blue": "#3d6cb3",
+    "--cyan": "#2a8a9a",
+    "--green": "#3d8a5a",
+    "--orange": "#c46a2d",
+    "--red": "#c0455a",
+    "--yellow": "#a07a20",
+    "--purple": "#6b5a9a",
+    "--font": 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace',
+    "--bar-track": "#cfd8e4",
+    "--text-soft": "#4a5a6e",
+    "--text-dim": "#5a6a7e",
+    "--hot-border": "#e0b4bc",
+    "--ok-border": "#b4d4be",
+    "--mid-border": "#d4c8a0",
+    "--kind-border": "#c4bdd8",
+  },
+  midnight: {
+    "--bg": "#0b0d14",
+    "--bg-deep": "#07080c",
+    "--panel": "#12141c",
+    "--border": "#2a3040",
+    "--text": "#d4dce8",
+    "--muted": "#6a7388",
+    "--blue": "#6ea8ff",
+    "--cyan": "#5eead4",
+    "--green": "#4ade80",
+    "--orange": "#fb923c",
+    "--red": "#fb7185",
+    "--yellow": "#fbbf24",
+    "--purple": "#c084fc",
+    "--font": 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace',
+    "--bar-track": "#05060a",
+    "--text-soft": "#9aa8bc",
+    "--text-dim": "#7a889c",
+    "--hot-border": "#4a1a24",
+    "--ok-border": "#1a3a28",
+    "--mid-border": "#3a3020",
+    "--kind-border": "#2a2440",
+  },
+  paper: {
+    "--bg": "#f6f0e4",
+    "--bg-deep": "#fffaf0",
+    "--panel": "#efe6d4",
+    "--border": "#d4c4a8",
+    "--text": "#3a2f22",
+    "--muted": "#8a7a64",
+    "--blue": "#3d6a8a",
+    "--cyan": "#2d7a7a",
+    "--green": "#4a7a40",
+    "--orange": "#c46a28",
+    "--red": "#b04040",
+    "--yellow": "#a07820",
+    "--purple": "#7a4a7a",
+    "--font": 'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace',
+    "--bar-track": "#e0d4c0",
+    "--text-soft": "#5a4e3c",
+    "--text-dim": "#6a5e4c",
+    "--hot-border": "#e0b8b0",
+    "--ok-border": "#c0d4b0",
+    "--mid-border": "#dcc8a0",
+    "--kind-border": "#d4c0d0",
+  },
+};
+
+function themeRootCss(theme: HtmlTheme): string {
+  const tokens = THEME_TOKENS[theme];
+  const lines = Object.entries(tokens).map(([key, value]) => `  ${key}: ${value};`);
+  return `:root {\n${lines.join("\n")}\n}`;
+}
+
+/** Remap leftover 0.1.16 hex literals so non-ember palettes stay readable. */
+const THEME_OVERRIDES = `
+.spicy { border-color: var(--hot-border); }
+.bar { background: var(--bar-track); }
+.summary { color: var(--text-soft); }
+.chip.tone-ok { border-color: var(--ok-border); }
+.chip.tone-mid { border-color: var(--mid-border); }
+.chip.tone-hot { border-color: var(--hot-border); }
+.roast, .deepen p { color: var(--text); }
+.finding .kind { border-color: var(--kind-border); }
+.finding p { color: var(--text-soft); }
+.snippet { color: var(--text-dim); }
+`;
 
 /** Escape text for safe insertion into HTML text/attr contexts. */
 export function escapeHtml(text: string): string {
@@ -88,6 +201,7 @@ function targetHtml(
  */
 export function formatHtml(result: RoastResult, options: FormatOptions = {}): string {
   const locale = options.locale || "en";
+  const theme = options.theme || DEFAULT_HTML_THEME;
   const strings = getStrings(locale);
   const tone = scoreTone(result.score);
   const spicy = result.spicy
@@ -102,6 +216,7 @@ export function formatHtml(result: RoastResult, options: FormatOptions = {}): st
   const targets = result.targets.map((t) => targetHtml(t, strings)).join("\n");
   const sources = result.targets.map((t) => t.source).filter(Boolean).join(" · ") || "stdin";
   const title = `llm-roast · ${result.score}/100 · ${result.label}`;
+  const themeOverrides = theme === "ember" ? "" : THEME_OVERRIDES;
 
   return `<!DOCTYPE html>
 <html lang="${escapeHtml(locale)}">
@@ -110,22 +225,7 @@ export function formatHtml(result: RoastResult, options: FormatOptions = {}): st
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>${escapeHtml(title)}</title>
 <style>
-:root {
-  --bg: #1a1b26;
-  --bg-deep: #16161e;
-  --panel: #1f2335;
-  --border: #3b4261;
-  --text: #c0caf5;
-  --muted: #565f89;
-  --blue: #7aa2f7;
-  --cyan: #7dcfff;
-  --green: #9ece6a;
-  --orange: #ff9e64;
-  --red: #f7768e;
-  --yellow: #e0af68;
-  --purple: #bb9af7;
-  --font: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-}
+${themeRootCss(theme)}
 * { box-sizing: border-box; }
 html, body {
   margin: 0; padding: 0;
@@ -216,7 +316,7 @@ footer {
 @media (max-width: 640px) {
   .hero .score { font-size: 32px; }
 }
-</style>
+${themeOverrides}</style>
 </head>
 <body>
 <header class="top">
