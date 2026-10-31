@@ -49,6 +49,7 @@ describe("parseArgv", () => {
       maxAnnotations: 20,
       quiet: false,
       locale: "en",
+      theme: "ember",
     });
   });
 
@@ -126,6 +127,35 @@ describe("parseArgv", () => {
       positional: "notes.md",
       html: true,
     });
+  });
+
+  it("parses --theme and defaults to ember", () => {
+    expect(parseArgv(["notes.md"])).toMatchObject({ theme: "ember" });
+    expect(parseArgv(["--html", "--theme", "ember", "notes.md"])).toMatchObject({
+      html: true,
+      theme: "ember",
+      positional: "notes.md",
+    });
+    expect(parseArgv(["--html", "--theme", "fog", "notes.md"])).toMatchObject({
+      theme: "fog",
+      html: true,
+    });
+    expect(parseArgv(["--theme", "midnight", "--html", "out.html"])).toMatchObject({
+      theme: "midnight",
+      html: "out.html",
+    });
+    expect(parseArgv(["--theme", "paper", "--html"])).toMatchObject({
+      theme: "paper",
+      html: true,
+    });
+  });
+
+  it("rejects unknown or missing --theme", () => {
+    expect(() => parseArgv(["--theme"])).toThrow(UsageError);
+    expect(() => parseArgv(["--theme"])).toThrow(/ember, fog, midnight, paper/);
+    expect(() => parseArgv(["--theme", "nope"])).toThrow(UsageError);
+    expect(() => parseArgv(["--theme", "nope"])).toThrow(/must be one of/);
+    expect(() => parseArgv(["--html", "--theme", "solarized"])).toThrow(/must be one of/);
   });
 
   it("rejects --html with --json or --suite", () => {

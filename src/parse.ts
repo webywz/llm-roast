@@ -1,3 +1,5 @@
+import { DEFAULT_HTML_THEME, HTML_THEMES, isHtmlTheme, type HtmlTheme } from "./types.js";
+
 export type CliCommand =
   | { cmd: "help" }
   | { cmd: "version" }
@@ -24,6 +26,8 @@ export type CliCommand =
       quiet: boolean;
       /** Locale for terminal output (en or zh). */
       locale: "en" | "zh";
+      /** HTML report palette (`--html` only). */
+      theme: HtmlTheme;
     };
 
 export class UsageError extends Error {
@@ -32,6 +36,16 @@ export class UsageError extends Error {
     super(message);
     Object.setPrototypeOf(this, new.target.prototype);
   }
+}
+
+function parseTheme(raw: string | undefined): HtmlTheme {
+  if (raw === undefined || raw === "") {
+    throw new UsageError(`--theme requires one of: ${HTML_THEMES.join(", ")}`);
+  }
+  if (!isHtmlTheme(raw)) {
+    throw new UsageError(`--theme must be one of: ${HTML_THEMES.join(", ")}`);
+  }
+  return raw;
 }
 
 function parseLocale(raw: string | undefined): "en" | "zh" {
@@ -88,6 +102,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let maxAnnotations = 20;
   let quiet = false;
   let locale: "en" | "zh" = "en";
+  let theme: HtmlTheme = DEFAULT_HTML_THEME;
   const positionals: string[] = [];
 
   const takeValue = (i: number, flag: string, next?: string): [string, number] => {
@@ -139,6 +154,11 @@ export function parseArgv(argv: string[]): CliCommand {
         break;
       case "--locale": {
         locale = parseLocale(rest[i + 1]);
+        i += 1;
+        break;
+      }
+      case "--theme": {
+        theme = parseTheme(rest[i + 1]);
         i += 1;
         break;
       }
@@ -223,5 +243,6 @@ export function parseArgv(argv: string[]): CliCommand {
     maxAnnotations,
     quiet,
     locale,
+    theme,
   };
 }

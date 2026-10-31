@@ -2,12 +2,14 @@ export type {
   Finding,
   FindingKind,
   FormatOptions,
+  HtmlTheme,
   RoastOptions,
   RoastResult,
   Severity,
   TargetKind,
   TargetResult,
 } from "./types.js";
+export { DEFAULT_HTML_THEME, HTML_THEMES, isHtmlTheme } from "./types.js";
 export { roastText, roastDocuments, roastDocumentsAsync, VERSION } from "./roast.js";
 export type { DocumentInput } from "./roast.js";
 export { analyzeText, detectKind, scoreLabel } from "./scorer.js";
