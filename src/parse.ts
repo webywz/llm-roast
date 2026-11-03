@@ -28,6 +28,8 @@ export type CliCommand =
       locale: "en" | "zh";
       /** HTML report palette (`--html` only). */
       theme: HtmlTheme;
+      /** Copy the pretty roast report to the clipboard (skip if unavailable). */
+      copy: boolean;
     };
 
 export class UsageError extends Error {
@@ -103,6 +105,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let quiet = false;
   let locale: "en" | "zh" = "en";
   let theme: HtmlTheme = DEFAULT_HTML_THEME;
+  let copy = false;
   const positionals: string[] = [];
 
   const takeValue = (i: number, flag: string, next?: string): [string, number] => {
@@ -151,6 +154,9 @@ export function parseArgv(argv: string[]): CliCommand {
         break;
       case "--quiet":
         quiet = true;
+        break;
+      case "--copy":
+        copy = true;
         break;
       case "--locale": {
         locale = parseLocale(rest[i + 1]);
@@ -244,5 +250,6 @@ export function parseArgv(argv: string[]): CliCommand {
     quiet,
     locale,
     theme,
+    copy,
   };
 }

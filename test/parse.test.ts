@@ -50,6 +50,21 @@ describe("parseArgv", () => {
       quiet: false,
       locale: "en",
       theme: "ember",
+      copy: false,
+    });
+  });
+
+  it("parses --copy and defaults to false", () => {
+    expect(parseArgv(["notes.md"])).toMatchObject({ copy: false });
+    expect(parseArgv(["--copy", "notes.md"])).toMatchObject({
+      cmd: "roast",
+      copy: true,
+      positional: "notes.md",
+    });
+    expect(parseArgv(["--copy", "--json", "--quiet", "notes.md"])).toMatchObject({
+      copy: true,
+      json: true,
+      quiet: true,
     });
   });
 
