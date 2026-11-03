@@ -9,6 +9,16 @@ describe("parseArgv", () => {
     expect(parseArgv(["-v"])).toEqual({ cmd: "version" });
   });
 
+  it("parses --list-themes and optional --json without roast inputs", () => {
+    expect(parseArgv(["--list-themes"])).toEqual({ cmd: "list-themes", json: false });
+    expect(parseArgv(["--list-themes", "--json"])).toEqual({ cmd: "list-themes", json: true });
+    expect(parseArgv(["--json", "--list-themes"])).toEqual({ cmd: "list-themes", json: true });
+    expect(parseArgv(["--list-themes", "--html", "--json"])).toEqual({
+      cmd: "list-themes",
+      json: true,
+    });
+  });
+
   it("parses a positional file", () => {
     expect(parseArgv(["notes.md"])).toMatchObject({
       cmd: "roast",

@@ -14,9 +14,9 @@ import {
 import { HELP } from "./help.js";
 import { basename, readSource } from "./io.js";
 import { parseArgv, UsageError } from "./parse.js";
-import { roastDocumentsAsync, VERSION } from "./roast.js";
+import { roastDocumentsAsync, VERSION, type DocumentInput } from "./roast.js";
 import { processSuite } from "./suite.js";
-import type { DocumentInput } from "./roast.js";
+import { HTML_THEMES } from "./types.js";
 
 export type CliDeps = {
   copyToClipboard?: (text: string) => boolean;
@@ -56,6 +56,14 @@ export async function main(argv: string[], deps: CliDeps = {}): Promise<number> 
   }
   if (parsed.cmd === "version") {
     process.stdout.write(`${VERSION}\n`);
+    return 0;
+  }
+  if (parsed.cmd === "list-themes") {
+    if (parsed.json) {
+      process.stdout.write(`${JSON.stringify([...HTML_THEMES])}\n`);
+    } else {
+      process.stdout.write(`${HTML_THEMES.join("\n")}\n`);
+    }
     return 0;
   }
 

@@ -3,6 +3,7 @@ import { DEFAULT_HTML_THEME, HTML_THEMES, isHtmlTheme, type HtmlTheme } from "./
 export type CliCommand =
   | { cmd: "help" }
   | { cmd: "version" }
+  | { cmd: "list-themes"; json: boolean }
   | {
       cmd: "roast";
       positional?: string;
@@ -106,6 +107,7 @@ export function parseArgv(argv: string[]): CliCommand {
   let locale: "en" | "zh" = "en";
   let theme: HtmlTheme = DEFAULT_HTML_THEME;
   let copy = false;
+  let listThemes = false;
   const positionals: string[] = [];
 
   const takeValue = (i: number, flag: string, next?: string): [string, number] => {
@@ -126,6 +128,9 @@ export function parseArgv(argv: string[]): CliCommand {
         return { cmd: "version" };
       case "--json":
         json = true;
+        break;
+      case "--list-themes":
+        listThemes = true;
         break;
       case "--spicy":
         spicy = true;
@@ -213,6 +218,10 @@ export function parseArgv(argv: string[]): CliCommand {
         }
         positionals.push(arg);
     }
+  }
+
+  if (listThemes) {
+    return { cmd: "list-themes", json };
   }
 
   if (positionals.length > 1) {

@@ -7,6 +7,8 @@ Usage:
   llm-roast [options] [file]
   llm-roast --prompt p.txt --answer a.txt
   llm-roast --suite <glob|dir>
+  llm-roast --list-themes
+  llm-roast --list-themes --json
   cat answer.md | llm-roast
   llm-roast - < prompt.txt
 
@@ -18,6 +20,7 @@ Options:
   --out <file>              Write report to file
   --html [path]             Self-contained HTML report (stdout, or write to path; offline, no CDN)
   --theme <name>            HTML palette: ember (default), fog, midnight, paper, aurora
+  --list-themes             Print available HTML theme names (one per line; --json: JSON array)
   --json                    Machine-readable output
   --spicy                   Harsher tone (score unchanged)
   --offline                 Skip optional API deepen even if keys are set
@@ -50,6 +53,7 @@ A short Markdown job summary is appended when GITHUB_STEP_SUMMARY is set.
 --quiet hides the pretty report only.
 --html and --json cannot share stdout; pick one primary export.
 --theme only restyles --html (ember = 0.1.16 look). Pretty / JSON / GitHub / scoring unchanged.
+--list-themes prints HTML palette names (same order as --theme); combine with --json for a JSON array.
 --copy writes the pretty terminal roast (not JSON / HTML / GitHub chrome).
 No clipboard tool → skip silently (exit 0 unless something else fails).
 `;

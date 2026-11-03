@@ -99,6 +99,33 @@ describe("escapeHtml / formatHtml", () => {
   });
 });
 
+describe("--list-themes CLI", () => {
+  it("prints HTML_THEMES names one per line", () => {
+    const result = run(["--list-themes"]);
+    expect(result.status).toBe(0);
+    expect(result.stdout).toBe(`${HTML_THEMES.join("\n")}\n`);
+    expect(result.stdout.trim().split("\n")).toEqual([...HTML_THEMES]);
+  });
+
+  it("prints a JSON array of HTML_THEMES with --list-themes --json", () => {
+    const listed = run(["--list-themes", "--json"]);
+    const reversed = run(["--json", "--list-themes"]);
+    expect(listed.status).toBe(0);
+    expect(reversed.status).toBe(0);
+    expect(JSON.parse(listed.stdout)).toEqual([...HTML_THEMES]);
+    expect(JSON.parse(reversed.stdout)).toEqual([...HTML_THEMES]);
+    expect(listed.stdout).toBe(`${JSON.stringify([...HTML_THEMES])}\n`);
+  });
+
+  it("does not require roast inputs", () => {
+    const result = run(["--list-themes"]);
+    expect(result.status).toBe(0);
+    expect(result.stderr).not.toMatch(/UsageError|unknown option|requires/);
+    expect(result.stdout).not.toMatch(/Roast Score/);
+    expect(result.stdout).not.toMatch(/<!DOCTYPE html>/i);
+  });
+});
+
 describe("--html CLI", () => {
   it("lists --html in help", () => {
     const help = run(["--help"]);
@@ -112,6 +139,8 @@ describe("--html CLI", () => {
     expect(help.stdout).toMatch(/midnight/);
     expect(help.stdout).toMatch(/paper/);
     expect(help.stdout).toMatch(/aurora/);
+    expect(help.stdout).toMatch(/--list-themes/);
+    expect(help.stdout).toMatch(/JSON array/);
   });
 
   it("prints HTML to stdout when path is omitted", () => {
