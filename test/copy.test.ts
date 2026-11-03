@@ -181,7 +181,7 @@ describe("--copy CLI wiring", () => {
     expect(result.status).toBe(0);
     expect(called).toBe(false);
     const payload = JSON.parse(result.stdout) as { version: string };
-    expect(payload.version).toBe("0.1.18");
+    expect(payload.version).toBe("0.1.19");
   });
 
   it("copied text matches color-free formatPretty", async () => {

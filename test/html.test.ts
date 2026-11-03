@@ -70,9 +70,32 @@ describe("escapeHtml / formatHtml", () => {
     expect(htmlByTheme.fog).not.toBe(htmlByTheme.ember);
     expect(htmlByTheme.midnight).not.toBe(htmlByTheme.ember);
     expect(htmlByTheme.paper).not.toBe(htmlByTheme.ember);
+    expect(htmlByTheme.aurora).not.toBe(htmlByTheme.ember);
     expect(htmlByTheme.fog).toContain("var(--hot-border)");
     expect(htmlByTheme.midnight).toContain("var(--bar-track)");
     expect(htmlByTheme.paper).toContain("var(--text-soft)");
+    expect(htmlByTheme.aurora).toContain("var(--hot-border)");
+    expect(htmlByTheme.aurora).toContain("var(--bar-track)");
+    expect(htmlByTheme.aurora).toContain("--bg: #0b2744");
+    expect(htmlByTheme.aurora).toContain("--cyan: #78c0ff");
+    expect(htmlByTheme.aurora).toContain("--green: #3ee8c8");
+    expect(htmlByTheme.aurora).toContain("--yellow: #c498ff");
+    expect(htmlByTheme.aurora).not.toContain("--bg: #1a1b26");
+  });
+
+  it("aurora shares breathing-github-profile / contrib-aquarium polar-night tokens", () => {
+    const aurora = THEME_TOKENS.aurora;
+    expect(aurora["--bg"]).toBe("#0b2744");
+    expect(aurora["--bg-deep"]).toBe("#030d18");
+    expect(aurora["--panel"]).toBe("#071a30");
+    expect(aurora["--border"]).toBe("#2a3c4c");
+    expect(aurora["--text"]).toBe("#e4fff6");
+    expect(aurora["--muted"]).toBe("#8ad0c4");
+    expect(aurora["--cyan"]).toBe("#78c0ff");
+    expect(aurora["--green"]).toBe("#3ee8c8");
+    expect(aurora["--yellow"]).toBe("#c498ff");
+    expect(aurora["--ok-border"]).toBe("#1e4850");
+    expect(HTML_THEMES).toContain("aurora");
   });
 });
 
@@ -88,6 +111,7 @@ describe("--html CLI", () => {
     expect(help.stdout).toMatch(/fog/);
     expect(help.stdout).toMatch(/midnight/);
     expect(help.stdout).toMatch(/paper/);
+    expect(help.stdout).toMatch(/aurora/);
   });
 
   it("prints HTML to stdout when path is omitted", () => {
@@ -229,24 +253,30 @@ describe("--html CLI", () => {
     expect(ember.stdout).toContain("--bg: #1a1b26");
   });
 
-  it("applies fog / midnight / paper palettes on --html", () => {
+  it("applies fog / midnight / paper / aurora palettes on --html", () => {
     const fog = run(["--offline", "--html", "--theme", "fog", "--no-color", answer]);
     const midnight = run(["--offline", "--html", "--theme", "midnight", "--no-color", answer]);
     const paper = run(["--offline", "--html", "--theme", "paper", "--no-color", answer]);
+    const aurora = run(["--offline", "--html", "--theme", "aurora", "--no-color", answer]);
     expect(fog.status).toBe(0);
     expect(midnight.status).toBe(0);
     expect(paper.status).toBe(0);
+    expect(aurora.status).toBe(0);
     expect(fog.stdout).toContain(`--bg: ${THEME_TOKENS.fog["--bg"]}`);
     expect(midnight.stdout).toContain(`--bg: ${THEME_TOKENS.midnight["--bg"]}`);
     expect(paper.stdout).toContain(`--bg: ${THEME_TOKENS.paper["--bg"]}`);
+    expect(aurora.stdout).toContain(`--bg: ${THEME_TOKENS.aurora["--bg"]}`);
+    expect(aurora.stdout).toContain(`--cyan: ${THEME_TOKENS.aurora["--cyan"]}`);
+    expect(aurora.stdout).toContain(`--ok-border: ${THEME_TOKENS.aurora["--ok-border"]}`);
     expect(fog.stdout).not.toContain("--bg: #1a1b26");
     expect(midnight.stdout).not.toContain("--bg: #1a1b26");
+    expect(aurora.stdout).not.toContain("--bg: #1a1b26");
   });
 
   it("rejects an unknown --theme with UsageError", () => {
     const result = run(["--offline", "--html", "--theme", "solarized", answer]);
     expect(result.status).toBe(2);
-    expect(result.stderr).toMatch(/must be one of: ember, fog, midnight, paper/);
+    expect(result.stderr).toMatch(/must be one of: ember, fog, midnight, paper, aurora/);
     expect(result.stdout).not.toMatch(/<!DOCTYPE html>/i);
   });
 
