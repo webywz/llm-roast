@@ -49,7 +49,7 @@ export interface RoastResult {
 }
 
 /** Offline HTML report palettes (`--theme`). `ember` is the 0.1.16 default look. */
-export const HTML_THEMES = ["ember", "fog", "midnight", "paper"] as const;
+export const HTML_THEMES = ["ember", "fog", "midnight", "paper", "aurora"] as const;
 export type HtmlTheme = (typeof HTML_THEMES)[number];
 export const DEFAULT_HTML_THEME: HtmlTheme = "ember";
 

@@ -163,11 +163,16 @@ describe("parseArgv", () => {
       theme: "paper",
       html: true,
     });
+    expect(parseArgv(["--html", "--theme", "aurora", "notes.md"])).toMatchObject({
+      theme: "aurora",
+      html: true,
+      positional: "notes.md",
+    });
   });
 
   it("rejects unknown or missing --theme", () => {
     expect(() => parseArgv(["--theme"])).toThrow(UsageError);
-    expect(() => parseArgv(["--theme"])).toThrow(/ember, fog, midnight, paper/);
+    expect(() => parseArgv(["--theme"])).toThrow(/ember, fog, midnight, paper, aurora/);
     expect(() => parseArgv(["--theme", "nope"])).toThrow(UsageError);
     expect(() => parseArgv(["--theme", "nope"])).toThrow(/must be one of/);
     expect(() => parseArgv(["--html", "--theme", "solarized"])).toThrow(/must be one of/);

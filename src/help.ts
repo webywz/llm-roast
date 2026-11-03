@@ -17,7 +17,7 @@ Options:
                             Supports brace expansion: {a,b}, e.g. "dir/{good,bad}/*.md"
   --out <file>              Write report to file
   --html [path]             Self-contained HTML report (stdout, or write to path; offline, no CDN)
-  --theme <name>            HTML palette: ember (default), fog, midnight, paper
+  --theme <name>            HTML palette: ember (default), fog, midnight, paper, aurora
   --json                    Machine-readable output
   --spicy                   Harsher tone (score unchanged)
   --offline                 Skip optional API deepen even if keys are set
