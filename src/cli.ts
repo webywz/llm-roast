@@ -1,6 +1,9 @@
 #!/usr/bin/env node
+import { realpathSync } from "node:fs";
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { copyToClipboard } from "./clipboard.js";
 import { formatJson, formatPretty } from "./format.js";
 import { formatHtml } from "./html.js";
 import {
@@ -15,11 +18,27 @@ import { roastDocumentsAsync, VERSION } from "./roast.js";
 import { processSuite } from "./suite.js";
 import type { DocumentInput } from "./roast.js";
 
+export type CliDeps = {
+  copyToClipboard?: (text: string) => boolean;
+};
+
 function stdinIsPiped(): boolean {
   return !process.stdin.isTTY;
 }
 
-async function main(argv: string[]): Promise<number> {
+function maybeCopyPretty(
+  text: string,
+  copy: (text: string) => boolean,
+): void {
+  // Missing clipboard → skip silently. Helpers must not fail the roast path.
+  try {
+    copy(text);
+  } catch {
+    // Clipboard helpers must not fail the roast path.
+  }
+}
+
+export async function main(argv: string[], deps: CliDeps = {}): Promise<number> {
   let parsed;
   try {
     parsed = parseArgv(argv);
@@ -65,6 +84,8 @@ async function main(argv: string[]): Promise<number> {
       }
       
       process.stdout.write(output);
+
+      // Suite is JSON-only — no pretty roast report to copy. --copy is a silent no-op.
       
       if (parsed.failAbove !== undefined && suiteResult.stats.maxScore > parsed.failAbove) {
         process.stderr.write(
@@ -125,6 +146,17 @@ async function main(argv: string[]): Promise<number> {
 
   const result = await roastDocumentsAsync(docs, parsed.spicy, parsed.deepen);
 
+  const prettyReport = formatPretty(result, {
+    color: false,
+    spicy: parsed.spicy,
+    locale: parsed.locale,
+  });
+
+  if (parsed.copy) {
+    const copy = deps.copyToClipboard ?? copyToClipboard;
+    maybeCopyPretty(prettyReport, copy);
+  }
+
   const htmlOnStdout = parsed.html === true;
   const htmlPath = typeof parsed.html === "string" ? parsed.html : undefined;
 
@@ -153,13 +185,7 @@ async function main(argv: string[]): Promise<number> {
 
   // Write to file when --out is set
   if (parsed.out) {
-    const outputContent = parsed.json
-      ? formatJson(result)
-      : formatPretty(result, {
-          color: false,
-          spicy: parsed.spicy,
-          locale: parsed.locale,
-        });
+    const outputContent = parsed.json ? formatJson(result) : prettyReport;
     
     try {
       await writeFile(parsed.out, outputContent, "utf8");
@@ -227,5 +253,20 @@ async function main(argv: string[]): Promise<number> {
   return 0;
 }
 
-const exitCode = await main(process.argv.slice(2));
-process.exit(exitCode);
+function isDirectRun(): boolean {
+  const entry = process.argv[1];
+  if (!entry) return false;
+  const self = fileURLToPath(import.meta.url);
+  try {
+    return (
+      realpathSync(entry) === self || realpathSync(entry) === realpathSync(self)
+    );
+  } catch {
+    return /(cli\.(js|ts)|llm-roast)$/.test(entry);
+  }
+}
+
+if (isDirectRun()) {
+  const exitCode = await main(process.argv.slice(2));
+  process.exit(exitCode);
+}

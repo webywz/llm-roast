@@ -56,6 +56,7 @@ llm-roast --github --offline answer.md
 llm-roast --github --quiet --offline answer.md
 llm-roast --github --max-annotations 10 --offline answer.md
 llm-roast --locale zh --offline answer.md
+llm-roast --copy --offline answer.md
 ```
 
 | Flag | What it does · 作用 |
@@ -74,6 +75,7 @@ llm-roast --locale zh --offline answer.md
 | `--github` | Emit GitHub Actions `::notice` / `::warning` / `::error` annotations · 输出 Actions 注解，PR Checks 可见 |
 | `--max-annotations <n>` | Cap annotation lines with `--github` (default `20`) · 限制 `--github` 注解条数（默认 20） |
 | `--quiet` | Suppress the pretty terminal report; `--json` / `--github` still emit · 抑制漂亮终端报告；`--json` / `--github` 仍照常输出 |
+| `--copy` | Copy the pretty roast report to the clipboard; skip silently if unavailable · 复制漂亮终端报告到剪贴板；无剪贴板工具则静默跳过 |
 | `--color` / `--no-color` | Force / disable ANSI color · 强制 / 关闭颜色 |
 | `-h` / `-v` | Help / version · 帮助 / 版本 |
 
@@ -101,7 +103,7 @@ Suite mode requires **≥2** roastable files (`.txt`, `.md`, `.markdown`). Suppo
 
 ```json
 {
-  "version": "0.1.17",
+  "version": "0.1.18",
   "files": [
     { "path": "examples/answer.md", "score": 73, "label": "yikes", "kind": "answer", "wordCount": 89 },
     { "path": "examples/prompt.txt", "score": 58, "label": "caution", "kind": "prompt", "wordCount": 42 }
@@ -180,6 +182,8 @@ const both = roastDocuments([
   **GitHub 注解** — `--github` 输出 Actions notice/warning/error；可选 Job Summary 与 `--max-annotations`；`--quiet` 只留注解不打漂亮报告。
 - **HTML export** — `--html` emits a self-contained offline roast (score, findings, spicy/summary). Omit the path for stdout; give a path to write the file (parent dirs created). `--theme <name>` swaps CSS-variable palettes (`ember` default = 0.1.16 look, plus `fog`, `midnight`, `paper`); it does not change JSON, pretty, GitHub annotations, or scoring. `--html` and `--json` cannot share stdout.
   **HTML 导出** — `--html` 写出离线自包含吐槽报告（分数、findings、spicy/summary）。省略路径打印到 stdout；给出路径则写文件（自动创建父目录）。`--theme <name>` 只换 CSS 变量配色（默认 `ember` 与 0.1.16 相同，另有 `fog` / `midnight` / `paper`）；不影响 JSON、终端漂亮输出、GitHub 注解或打分。`--html` 与 `--json` 不能同时占用 stdout。
+- **Clipboard** — `--copy` writes the pretty terminal roast (not JSON / HTML / GitHub chrome) to the system clipboard. Missing `pbcopy` / `wl-copy` / `xclip` / `xsel` / `clip` → skip silently.
+  **剪贴板** — `--copy` 把漂亮终端吐槽报告（不是 JSON / HTML / GitHub 装饰）写入系统剪贴板。没有 `pbcopy` / `wl-copy` / `xclip` / `xsel` / `clip` 则静默跳过。
 - **Optional deepen** — with `OPENAI_API_KEY` (preferred) or `ANTHROPIC_API_KEY`, one extra paragraph after the heuristic roast. Failures and timeouts stay quiet. `--offline` skips it.
   **可选加深** — 有 OpenAI（优先）或 Anthropic Key 时，启发式之后多一段评语；失败 / 超时静默。`--offline` 跳过。
 

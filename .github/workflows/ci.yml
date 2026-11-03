@@ -56,7 +56,17 @@ jobs:
           echo "$out" | grep -E '::(error|warning|notice) ' >/dev/null
           ! echo "$out" | grep -q '::group::'
           test -z "$(node dist/cli.js --offline --quiet --no-color examples/answer.md)"
-          node dist/cli.js --version | grep -qx '0.1.17'
+          node dist/cli.js --help | grep -q -- '--copy'
+          # --copy: pretty stdout still prints; missing clipboard → silent skip
+          copy_out="$(node dist/cli.js --offline --no-color --copy examples/answer.md)"
+          echo "$copy_out" | grep -q 'Roast Score'
+          ! echo "$copy_out" | grep -qi clipboard
+          # --copy --json: stdout stays JSON (pretty goes to clipboard, not stdout chrome)
+          copy_json="$(node dist/cli.js --offline --copy --json examples/answer.md)"
+          echo "$copy_json" | grep -q '"score":'
+          echo "$copy_json" | grep -q '"version": "0.1.18"'
+          test -z "$(node dist/cli.js --offline --copy --quiet --no-color examples/answer.md)"
+          node dist/cli.js --version | grep -qx '0.1.18'
           # --out smoke tests
           out_file="$(mktemp)"
           node dist/cli.js --offline --no-color --out "$out_file" examples/answer.md
@@ -69,7 +79,7 @@ jobs:
           json_stdout="$(node dist/cli.js --offline --out "$out_json_file" --json examples/answer.md)"
           test -s "$out_json_file"
           echo "$json_stdout" | grep -q '"score":'
-          echo "$json_stdout" | grep -q '"version": "0.1.17"'
+          echo "$json_stdout" | grep -q '"version": "0.1.18"'
           cat "$out_json_file" | grep -q '"score":'
           rm -f "$out_json_file"
           # --html stdout: self-contained report, no CDN
@@ -112,7 +122,7 @@ jobs:
           grep -E '::(error|warning|notice) ' /tmp/gh_html_err >/dev/null
           # Suite mode smoke tests
           suite_out="$(node dist/cli.js --suite examples --json --offline)"
-          echo "$suite_out" | grep -q '"version": "0.1.17"'
+          echo "$suite_out" | grep -q '"version": "0.1.18"'
           echo "$suite_out" | grep -q '"count":'
           count="$(echo "$suite_out" | grep -o '"count": [0-9]*' | grep -o '[0-9]*')"
           test "$count" -ge 2

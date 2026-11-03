@@ -26,6 +26,7 @@ Options:
   --github                  Emit GitHub Actions annotations (::notice/warning/error)
   --max-annotations <n>     Cap GitHub annotation lines (default: 20)
   --quiet                   Suppress the pretty terminal report (--json / --github still emit)
+  --copy                    Copy the pretty roast report to the clipboard (skip silently if unavailable)
   --color                   Force ANSI colors
   --no-color                Disable ANSI colors
   -h, --help                Show help
@@ -49,4 +50,6 @@ A short Markdown job summary is appended when GITHUB_STEP_SUMMARY is set.
 --quiet hides the pretty report only.
 --html and --json cannot share stdout; pick one primary export.
 --theme only restyles --html (ember = 0.1.16 look). Pretty / JSON / GitHub / scoring unchanged.
+--copy writes the pretty terminal roast (not JSON / HTML / GitHub chrome).
+No clipboard tool → skip silently (exit 0 unless something else fails).
 `;
